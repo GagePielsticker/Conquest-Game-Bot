@@ -1,0 +1,13 @@
+{
+    "bot" : {
+        "prefix" : "c!",
+        "token" : "NTk1ODE3ODY1NDkyNDMwODQ4.XRwgpQ.3eW7HGah0uSceSpuQX5x-mi2aA0",
+        "embedColor" : 11880263,
+        "activity" : "c!help",
+        "developers" : ["174511937151827969"],
+        "botDescription" : "Conquest is an MMORPG following adventurers travels through-out the world of ____ as the explore, colonize, and conquest!",
+        "inviteURL" : "https://discordapp.com/oauth2/authorize?&client_id=595817865492430848&scope=bot",
+        "supportServer" : "https://discord.gg/8v8KYkc",
+        "mongodbURL" : "mongodb://localhost:27017"
+    }
+}
