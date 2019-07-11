@@ -17,7 +17,6 @@ module.exports = client => {
     client.on('message' , async message => {
         if(message.author.bot) return
         if(!message.content.startsWith(client.settings.bot.prefix)) return
-        //Game checks happen in executeCommand
         await client.executeCommand(message)
         .catch(e => client.sendError(message, e))
         .then(() => client.log(`${message.author.tag} || ${message.content}`))

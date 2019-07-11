@@ -1,11 +1,14 @@
 module.exports = client => {
 
     /**
-     * Extended functions dependencies
+     * dependencies & extends
      */
     client.game = {}
     client.game.cooldowns = {}
     client.game.cooldowns.collector = []
+    const project = require('project-name-generator')
+    const Chance = require('chance')
+    const chance = new Chance()
 
     /**
      * Creates game account for user
@@ -14,13 +17,16 @@ module.exports = client => {
     client.game.createUser = did => {
         return new Promise((resolve, reject) => {
             //Create user object in database
-            client.database.collection('users').update({id:did}, {
+            client.database.collection('users').updateOne({id:did}, {
                 id:did,
+                xPos: 0,
+                yPos: 0,
                 race: null,
                 role: null,
                 gold: 0,
                 stats: {
                     level: 1,
+                    maxHealth: 0,
                     health: 0,
                     attack: 0,
                     defense: 0,
@@ -32,12 +38,31 @@ module.exports = client => {
                     dexterity: 0
                 },
                 finishedCreation: false
-            }, {upsert:true})
+            }, { upsert:true })
             .then(async () => {
                 let profile = await client.users.fetch(did, true)
                 client.log(`Created user for ${profile.username}#${profile.discriminator}`)
                 resolve()
             })
+        })
+    }
+
+    /**
+     * Generates a part of the grid system
+     * @param {Integer} xPos
+     * @param {Integer} yPos
+     */
+    client.game.generateGrid = (xPos, yPos) => {
+        return new Promise(async (resolve, reject) => {
+            let gridCheck = await client.database.collection('map').findOne({xPos: xPos, yPos: yPos})
+            if(gridCheck != null) return reject('Coordinates already exist.')
+            await client.database.collection('map').updateOne({xPos: xPos, yPos: yPos}, {
+                xPos: xPos,
+                yPos: yPos,
+
+            }, { upsert: true })
+            .then(() => resolve())
+            .catch(e => reject(e))
         })
     }
 
@@ -92,6 +117,7 @@ module.exports = client => {
 
             //add racial buffs
             profile.race = selectedRace.name
+            profile.stats.maxHealth += selectedRace.baseMaxHealth
             profile.stats.health += selectedRace.baseHealth
             profile.stats.attack += selectedRace.baseAttack
             profile.stats.defense += selectedRace.baseDefense

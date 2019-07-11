@@ -2,6 +2,7 @@
     "races" : [
         {
             "name" : "human",
+            "baseMaxHealth" : 120,
             "baseHealth" : 120,
             "baseAttack" : 3,
             "baseDefense" : 2,
@@ -14,6 +15,7 @@
         },
         {
             "name" : "dwarf",
+            "baseMaxHealth" : 150,
             "baseHealth" : 150,
             "baseAttack" : 4,
             "baseDefense" : 3,
@@ -26,6 +28,7 @@
         },
         {
             "name" : "gnome",
+            "baseMaxHealth" : 100,
             "baseHealth" : 100,
             "baseAttack" : 5,
             "baseDefense" : 3,
@@ -38,6 +41,7 @@
         },
         {
             "name" : "elf",
+            "baseMaxHealth" : 140,
             "baseHealth" : 140,
             "baseAttack" : 1,
             "baseDefense" : 2,
@@ -50,6 +54,7 @@
         },
         {
             "name" : "orc",
+            "baseMaxHealth" : 200,
             "baseHealth" : 200,
             "baseAttack" : 3,
             "baseDefense" : 4,
@@ -62,6 +67,7 @@
         },
         {
             "name" : "troll",
+            "baseMaxHealth" : 80,
             "baseHealth" : 80,
             "baseAttack" : 1,
             "baseDefense" : 1,
