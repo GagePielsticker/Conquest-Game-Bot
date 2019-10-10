@@ -1,13 +1,31 @@
 {
     "bot" : {
         "prefix" : "c!",
-        "token" : "NTk1ODE3ODY1NDkyNDMwODQ4.XRwgpQ.3eW7HGah0uSceSpuQX5x-mi2aA0",
-        "embedColor" : 11880263,
+        "token" : "NTk1ODE3ODY1NDkyNDMwODQ4.XZghFg.pccv3kZj3CbdeVpHILRnH9Woclw",
+        "embedColor" : 11814727,
         "activity" : "c!help",
         "developers" : ["174511937151827969"],
-        "botDescription" : "Conquest is an MMORPG following adventurers travels through-out the world of ____ as the explore, colonize, and conquest!",
-        "inviteURL" : "https://discordapp.com/oauth2/authorize?&client_id=595817865492430848&scope=bot",
+        "botDescription" : "Welcome to Conquest - A mmorpg following adventurers travels in the medieval time and their attempts to rule, create, and explore the world!",
+        "inviteURL" : "https://discordapp.com/oauth2/authorize?&client_id=595817865492430848&scope=bot&permissions=10304",
         "supportServer" : "https://discord.gg/8v8KYkc",
-        "mongodbURL" : "mongodb://localhost:27017"
+        "collectorTimeout" : 80
+    },
+
+    "game" : {
+        "map" : {
+            "xMax" : 1000,
+            "xMin" : -1000,
+            "yMax" : 1000,
+            "yMin" : -1000
+        }
+    },
+
+    "database" : {
+        "mongodbURL" : "mongodb://localhost:27017",
+        "databaseName" : "conquest"
+    },
+
+    "dbl" : {
+        "token" : ""
     }
 }

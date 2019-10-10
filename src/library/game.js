@@ -1,138 +1,431 @@
 module.exports = client => {
+  // get needed libraries
+  const Chance = require('chance')
+  const chance = new Chance()
+
+  /** @namespace */
+  client.game = {
 
     /**
-     * dependencies & extends
+      * Create a database object for the guild
+      * @param {String} uid a discord user id
      */
-    client.game = {}
-    client.game.cooldowns = {}
-    client.game.cooldowns.collector = []
-    const project = require('project-name-generator')
-    const Chance = require('chance')
-    const chance = new Chance()
+    createUser: async (uid) => {
+      // check if user exist
+      const userEntry = await client.database.collection('users').findOne({ uid: uid })
+      if (userEntry != null) return Promise.reject('User exist in database.')
+
+      // calculate spawn position
+      const xPos = Math.floor(Math.random() * (client.settings.game.map.xMax - client.settings.game.map.xMin) + client.settings.game.map.xMin)
+      const yPos = Math.floor(Math.random() * (client.settings.game.map.yMax - client.settings.game.map.yMin) + client.settings.game.map.yMin)
+
+      // check if tile exist if not create it
+      const mapEntry = await client.database.collection('map').findOne({ xPos: xPos, yPos: yPos })
+      if (mapEntry == null) await client.game.createTile(xPos, yPos)
+
+      // set default user object
+      const userObject = {
+        uid: uid,
+        xPos: xPos,
+        yPos: yPos,
+        gold: 0,
+        empireName: null,
+        flagURL: null,
+        hasSettler: true,
+        cities: [],
+        scoutedTiles: []
+      }
+
+      // write object to database
+      return client.database.collection('users').insertOne(userObject)
+    },
 
     /**
-     * Creates game account for user
-     * @param {String} did
+      * Creates a map tile or something idk
+      * @param {Integer} xPos position on map grid
+      * @param {Integer} yPos position on map grid
      */
-    client.game.createUser = did => {
-        return new Promise((resolve, reject) => {
-            //Create user object in database
-            client.database.collection('users').updateOne({id:did}, {
-                id:did,
-                xPos: 0,
-                yPos: 0,
-                race: null,
-                role: null,
-                gold: 0,
-                stats: {
-                    level: 1,
-                    maxHealth: 0,
-                    health: 0,
-                    attack: 0,
-                    defense: 0,
-                    magic: 0,
-                    range: 0,
-                    prayer: 0,
-                    intellect: 0,
-                    charisma: 0,
-                    dexterity: 0
-                },
-                finishedCreation: false
-            }, { upsert:true })
-            .then(async () => {
-                let profile = await client.users.fetch(did, true)
-                client.log(`Created user for ${profile.username}#${profile.discriminator}`)
-                resolve()
-            })
-        })
+    createTile: async (xPos, yPos) => {
+      // check if tile exist
+      const entry = await client.database.collection('map').findOne({ xPos: xPos, yPos: yPos })
+      if (entry != null) return Promise.reject('Map tile exist in database.')
+
+      // set default tile object
+      const mapObject = {
+        xPos: xPos,
+        yPos: yPos,
+        city: null,
+        hasWonder: false
+      }
+
+      // calculate if city and wonder spawns with weighted chance
+      const hasNPCCity = chance.weighted([true, false], [15, Math.floor(100 - 15)])
+      const hasWonder = chance.weighted([true, false], [5, Math.floor(100 - 5)])
+
+      // if tile has wonder change objects value
+      if (hasWonder) mapObject.hasWonder = true
+
+      // if tile has npc city randomly generate one
+      if (hasNPCCity) {
+        mapObject.city = {
+          level: 1,
+          xPos: xPos,
+          yPos: yPos,
+          inStasis: false,
+          owner: null,
+          name: chance.city(),
+          tradeRoutes: [],
+          resources: {
+            stone: Math.floor(Math.random() * 11),
+            maxStone: 2000,
+            metal: Math.floor(Math.random() * 11),
+            maxMetal: 2000,
+            wood: Math.floor(Math.random() * 11),
+            maxWood: 2000,
+            food: Math.floor(Math.random() * 30) + 10,
+            maxFood: 3000
+          },
+          population: {
+            military: Math.floor(Math.random() * 25) + 1,
+            miners: Math.floor(Math.random() * 25) + 1,
+            workers: Math.floor(Math.random() * 25) + 1,
+            farmers: Math.floor(Math.random() * 25) + 1,
+            unemployed: 0
+          }
+        }
+      }
+
+      // write object to database
+      return client.database.collection('map').insertOne(mapObject)
+    },
+
+    /**
+     * Contains the user id's of everyone currently traveling
+     */
+    movementCooldown: [],
+
+    /**
+      * Moves user to location
+      * @param {String} uid a discord user id
+      * @param {Integer} xPos position on map grid
+      * @param {Integer} yPos position on map grid
+     */
+    moveUser: async (uid, xPos, yPos) => {
+      // check if user exist
+      const userEntry = await client.database.collection('users').findOne({ uid: uid })
+      if (userEntry == null) return Promise.reject('User does not exist in database.')
+
+      // check if tile exist
+      const entry = await client.database.collection('map').findOne({ xPos: xPos, yPos: yPos })
+      if (entry == null) await client.game.createTile(xPos, yPos)
+
+      // check if user is in cooldown
+      if (client.game.movementCooldown.includes(uid)) return Promise.reject('User is currently Travelling.')
+
+      // check to make sure target is in bounds
+      if (xPos > client.settings.game.map.xMax || xPos < client.settings.game.map.xMin) return Promise.reject('Invalid location.')
+      if (yPos > client.settings.game.map.yMax || yPos < client.settings.game.map.yMin) return Promise.reject('Invalid location.')
+
+      // calculate travel time to target
+      const travelTime = await client.game.calculateTravelTime(userEntry.xPos, userEntry.yPos, xPos, yPos)
+
+      // add user to cooldown array and setup task
+      client.game.movementCooldown.push(uid)
+
+      setTimeout(() => {
+        // remove user from cooldown array
+        client.game.movementCooldown.splice(client.game.movementCooldown.indexOf(uid), 1)
+
+        // move user in database
+        client.database.collection('users').updateOne({ id: uid }, { $set: { xPos: xPos, yPos: yPos } })
+      }, travelTime)
+
+      // return resolve that timeout has been set
+      return Promise.resolve()
+    },
+
+    /**
+      * Calculates travel time
+      * @param {Integer} x1 position on map grid
+      * @param {Integer} y1 position on map grid
+      * @param {Integer} x2 position on map grid
+      * @param {Integer} y2 position on map grid
+      * @returns {Integer} in ms
+     */
+    calculateTravelTime: async (x1, y1, x2, y2) => {
+      // distance formula from user to target
+      const a = x1 - x2
+      const b = y1 - y2
+      const distance = Math.sqrt(a * a + b * b)
+
+      // calculate time from distance
+      const time = distance * 4
+
+      // return time in milleseconds
+      return Promise.resolve(Math.floor(time * 1000))
+    },
+
+    /**
+      * Settles location of player if settler available
+      * @param {String} uid a discord user id
+     */
+    settleLocation: async (uid, name) => {
+      // check if user exist
+      const userEntry = await client.database.collection('users').findOne({ uid: uid })
+      if (userEntry == null) return Promise.reject('User does not exist in database.')
+
+      // check if tile exist
+      const entry = await client.database.collection('map').findOne({ xPos: userEntry.xPos, yPos: userEntry.yPos })
+      if (entry == null) return Promise.reject('Map tile does not exist in database.')
+
+      // check if city exist on tile
+      if (entry.city != null) return Promise.reject('City exist on tile already.')
+
+      // check if user has settler available
+      if (!userEntry.hasSettler) return Promise.reject('User does not have available settler.')
+
+      const cityObject = {
+        level: 1,
+        xPos: userEntry.xPos,
+        yPos: userEntry.yPos,
+        inStasis: false,
+        owner: uid,
+        name: name,
+        tradeRoutes: [],
+        resources: {
+          stone: 0,
+          maxStone: 2000,
+          metal: 0,
+          maxMetal: 2000,
+          wood: 0,
+          maxWood: 2000,
+          food: 200,
+          maxFood: 3000
+        },
+        population: {
+          military: 0,
+          miners: 0,
+          workers: 0,
+          farmers: 0,
+          unemployed: 100
+        }
+      }
+
+      // create city in map
+      await client.database.collection('map').updateOne({ xPos: userEntry.xPos, yPos: userEntry.yPos }, { $set: { city: cityObject } })
+
+      // remove settler from user and add city to their city array
+      userEntry.cities.push(cityObject)
+      await client.database.collection('users').updateOne({ uid: uid }, { $set: { hasSettler: false, cities: userEntry.cities } })
+
+      // resolve on completion
+      return Promise.resolve()
+    },
+
+    /**
+      * Sets the flag of a user
+      * @param {String} uid a discord user id
+      * @param {String} url valid image url
+     */
+    setFlag: async (uid, url) => {
+      // check if user exist
+      const userEntry = await client.database.collection('users').findOne({ uid: uid })
+      if (userEntry == null) return Promise.reject('User does not exist in database.')
+
+      // set flag and return
+      return client.database.collection('users').updateOne({ uid: uid }, { $set: { flagURL: url } })
+    },
+
+    /**
+      * sets empire name
+      * @param {String} uid a discord user id
+      * @param {String} empireName name of empire
+     */
+    setEmpireName: async (uid, empireName) => {
+      // check if user exist
+      const userEntry = await client.database.collection('users').findOne({ uid: uid })
+      if (userEntry == null) return Promise.reject('User does not exist in database.')
+
+      // set empire name and return
+      return client.database.collection('users').updateOne({ uid: uid }, { $set: { empireName: empireName } })
+    },
+
+    /**
+      * Changes tiles cities name
+      * @param {String} executor a discord user id of who executed
+      * @param {Integer} xPos position on map grid
+      * @param {Integer} yPos position on map grid
+      * @param {String} name name of city
+     */
+    setCityName: async (executor, xPos, yPos, name) => {
+      // check if user exist
+      const userEntry = await client.database.collection('users').findOne({ uid: executor })
+      if (userEntry == null) return Promise.reject('User does not exist in database.')
+
+      // check if tile exist
+      const mapEntry = await client.database.collection('map').findOne({ xPos: xPos, yPos: yPos })
+      if (mapEntry == null) return Promise.reject('Map tile does not exist in database.')
+
+      // check if city exist
+      if (mapEntry.city == null) return Promise.reject('City does not exist on tile.')
+
+      // check if user owns city
+      if (mapEntry.city.owner != executor) return Promise.reject('User does not own city.')
+
+      // locate user city entry and rename
+      userEntry.cities.forEach(city => {
+        if (city.xPos == xPos && city.yPos == yPos) {
+          city.name = name
+        }
+      })
+
+      // rename city on map and write both to database
+      await client.database.collection('map').updateOne({ xPos: xPos, yPos: yPos }, { $set: { 'city.name': name } })
+      await client.database.collection('users').updateOne({ uid: executor }, { $set: { cities: userEntry.cities } })
+
+      // resolve
+      Promise.resolve()
+    },
+
+    /**
+      * Calculates next city level cost
+      * @param {Integer} currentLevel the current level of what you want to check
+     */
+    calculateLevelCost: async (currentLevel) => {
+      // formula is (3760.60309(1.63068)^x) with x being level
+      const power = Math.pow(1.63068, currentLevel + 1)
+      const cost = Math.floor(3760.60309 * power)
+
+      // return cost
+      return cost
+    },
+
+    /**
+      * Calculates next city max population @ level
+      * @param {Integer} level the level to run calculation with
+     */
+    calculateMaxPopulation: async (level) => {
+      // calculate max population
+      const maxPop = level * 1000
+
+      // return cost
+      return maxPop
+    },
+
+    /**
+     * levels up a users city if they can afford it
+     * @param {String} uid a discord user id
+     * @param {Integer} xPos position on map grid
+     * @param {Integer} yPos position on map grid
+     */
+    levelCity: async (uid, xPos, yPos) => {
+      // check if user exist
+      const userEntry = await client.database.collection('users').findOne({ uid: uid })
+      if (userEntry == null) return Promise.reject('User does not exist in database.')
+
+      // check if tile exist
+      const mapEntry = await client.database.collection('map').findOne({ xPos: xPos, yPos: yPos })
+      if (mapEntry == null) return Promise.reject('Map tile does not exist in database.')
+
+      // check if city exist
+      if (mapEntry.city == null) return Promise.reject('City does not exist on tile.')
+
+      // check if user own city
+      if (mapEntry.city.owner != uid) return Promise.reject('User does not own city.')
+
+      // get cost
+      const cost = await client.game.calculateLevelCost(mapEntry.city.level)
+
+      // check if user can afford
+      if (userEntry.gold - cost < 0) return Promise.reject('User cannot afford to level!')
+
+      // find city in users array and update level
+      userEntry.cities.forEach(city => {
+        if (city.xPos == xPos && city.yPos == yPos) {
+          city.level++
+          city.resources.maxStone = city.level * 1.5 * 1000
+          city.resources.maxMetal += city.level * 1.5 * 1000
+          city.resources.maxWood += city.level * 1.5 * 1000
+          city.resources.maxFood += city.level * 1.5 * 1000
+        }
+      })
+
+      // write changes
+      await client.database.collection('users').updateOne({ uid: uid }, {
+        $set: {
+          cities: userEntry.cities,
+          gold: userEntry.gold - cost
+        }
+      })
+
+      await client.database.collection('map').updateOne({ xPos: xPos, yPos: yPos }, {
+        $set: {
+          'city.level': mapEntry.city.level++,
+          'city.resources.maxStone': mapEntry.city.level * 1.5 * 1000,
+          'city.resources.maxMetal': mapEntry.city.level * 1.5 * 1000,
+          'city.resources.maxWood': mapEntry.city.level * 1.5 * 1000,
+          'city.resources.maxFood': mapEntry.city.level * 1.5 * 1000
+        }
+      })
+
+      // resolve once finished
+      return Promise.resolve()
+    },
+
+    /**
+     * moves work force between jobs at a settlement
+     * @param {String} uid a discord user id
+     * @param {Integer} xPos position on map grid
+     * @param {Integer} yPos position on map grid
+     * @param {String} origin original work force you want to modify
+     * @param {String} target target work force you want to move original to
+     * @param {Integer} amount amount to transition
+     */
+    changePopulationJob: async (uid, xPos, yPos, origin, target, amount) => {
+      // check if user exist
+      const userEntry = await client.database.collection('users').findOne({ uid: uid })
+      if (userEntry == null) return Promise.reject('User does not exist in database.')
+
+      // check if tile exist
+      const mapEntry = await client.database.collection('map').findOne({ xPos: xPos, yPos: yPos })
+      if (mapEntry == null) return Promise.reject('Map tile does not exist in database.')
+
+      // check if city exist
+      if (mapEntry.city == null) return Promise.reject('City does not exist on tile.')
+
+      // check if user owns city
+      if (mapEntry.city.owner != uid) return Promise.reject('User does not own city.')
+
+      // uniformize job names
+      origin = origin.toLowerCase()
+      target = target.toLowerCase()
+
+      // check to make sure job exist
+      const possibleJobs = ['military', 'workers', 'farmers', 'miners', 'unemployed']
+
+      if (!possibleJobs.includes(origin)) return Promise.reject('Origin job does not exist.')
+      if (!possibleJobs.includes(target)) return Promise.reject('Target job does not exist.')
+
+      // check to make sure there are no shenanigans going on here
+      if (amount <= 0) return Promise.reject('You must enter a value greater than 0.')
+      if (mapEntry.city.population[origin] - amount < 0) return Promise.reject('You do not have enough people to do this.')
+
+      // do calculations for both map entry and user entry
+      userEntry.cities.forEach(city => {
+        if (city.xPos == xPos && city.yPos == yPos) {
+          city.population[origin] -= amount
+          city.population[target] += amount
+        }
+      })
+
+      mapEntry.city.population[origin] -= amount
+      mapEntry.city.population[target] += amount
+
+      // write to db
+      await client.database.collection('users').updateOne({ uid: uid }, { $set: { cities: userEntry.cities } })
+      await client.database.collection('map').updateOne({ xPos: xPos, yPos: yPos }, { $set: { 'city.population': mapEntry.city.population } })
+
+      return Promise.resolve()
     }
-
-    /**
-     * Generates a part of the grid system
-     * @param {Integer} xPos
-     * @param {Integer} yPos
-     */
-    client.game.generateGrid = (xPos, yPos) => {
-        return new Promise(async (resolve, reject) => {
-            let gridCheck = await client.database.collection('map').findOne({xPos: xPos, yPos: yPos})
-            if(gridCheck != null) return reject('Coordinates already exist.')
-            await client.database.collection('map').updateOne({xPos: xPos, yPos: yPos}, {
-                xPos: xPos,
-                yPos: yPos,
-
-            }, { upsert: true })
-            .then(() => resolve())
-            .catch(e => reject(e))
-        })
-    }
-
-    /**
-     * Sets a users role to whatever is input
-     * @param {String} did
-     * @param {String} role
-     */
-    client.game.setUserRole = (did, role) => {
-        return new Promise(async (resolve, reject) => {
-            
-            //load user profile
-            let profile = client.database.collection('users').findOne({id: did})
-
-            //check if they already have a role
-            if(profile.role != null) return reject('User already has a class selected.')
-
-            //check if its a valid role
-            let exist = false
-            await client.settings.game.roles.forEach(entry => {
-                if(entry.name === role.toLowerCase()) exist = true
-            })
-            if(!exist) return reject('Class does not exist.')
-
-            //set profiles class
-            await client.database.collection('users').updateOne({id: did}, {$set:{role:role.toLowerCase()}})
-            .then(resolve())
-            .catch(e => reject('Error saving data.'))
-        })
-    }
-
-    /**
-     * Sets a users race to whatever is input
-     * @param {String} did
-     * @param {String} race
-     */
-    client.game.setUserRace = (did, race) => {
-        return new Promise(async (resolve, reject) => {
-            
-            //load user profile
-            let profile = await client.database.collection('users').findOne({id: did})
-
-            //check if they already have a race
-            if(profile.race != null) return reject('User already has a race selected.')
-
-            //check if its a valid race
-            let selectedRace = {}
-            await client.settings.game.races.forEach(entry => {
-                if(entry.name === race.toLowerCase()) selectedRace = entry
-            })
-            if(!selectedRace.name) return reject('Race does not exist.')
-
-            //add racial buffs
-            profile.race = selectedRace.name
-            profile.stats.maxHealth += selectedRace.baseMaxHealth
-            profile.stats.health += selectedRace.baseHealth
-            profile.stats.attack += selectedRace.baseAttack
-            profile.stats.defense += selectedRace.baseDefense
-            profile.stats.magic += selectedRace.baseMagic
-            profile.stats.range += selectedRace.baseRange
-            profile.stats.prayer += selectedRace.basePrayer
-            profile.stats.intellect += selectedRace.baseIntellect
-            profile.stats.charisma += selectedRace.baseCharisma
-            profile.stats.dexterity += selectedRace.baseDexterity
-
-            //write user data
-            await client.database.collection('users').update({id:did}, profile)
-
-            //resolve
-            await resolve()
-        })
-    }
+  }
 }

@@ -1,18 +1,22 @@
 {
   "name": "conquest",
   "version": "1.0.0",
-  "description": "Civilization construction & interactive mmo",
+  "description": "A discord based mmo",
   "main": "./src/init.js",
   "scripts": {
-    "test": "node ./test/init.js",
     "start": "node ./src/init.js"
   },
   "author": "Gage Pielsticker",
   "license": "MIT",
   "dependencies": {
-    "discord.js": "github:discordjs/discord.js",
-    "jest": "^24.8.0",
+    "chalk": "^2.4.2",
+    "chance": "^1.1.0",
+    "chance.js": "0.0.1",
+    "discord.js": "discordjs/discord.js",
+    "humanize-duration": "^3.21.0",
     "moment": "^2.24.0",
-    "mongodb": "^3.2.7"
+    "mongodb": "^3.3.2",
+    "standard": "^14.3.1",
+    "systeminformation": "^4.14.11"
   }
 }
