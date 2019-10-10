@@ -4,7 +4,6 @@ const client = new Discord.Client({ shardCount: 'auto' })
 
 // Extra client appends
 client.discord = Discord
-client.moment = require('moment')
 client.settings = require('./settings/settings.json')
 
 // Send client to handlers

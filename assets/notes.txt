@@ -81,6 +81,8 @@ map general
 city
 {
     level: 1,
+    xPos: 0,
+    yPos: 0,
     inStasis: false,
     owner: null,
     tradeRoutes: [],
@@ -112,7 +114,8 @@ user
     empireName: null,
     flagURL: null,
     hasSettler: true,
-    cities: []
+    cities: [],
+    scoutedTiles: []
 }
 
 
@@ -134,14 +137,11 @@ calculateTravelTime - finished - tested
 calculateLevelCost - finished - tested
 calculateMaxPopulation - finished - tested
 
-trade routes
-
-tile scouting
+tile scouting - finished - tested
 
 leaderboards
 
-automatic population generation
-automatic gold generation
-automatic food generation
-automatic resource generation
-automatic food consumption
+automatic gold generation - finished
+automatic food generation - finished
+automatic resource generation - finished
+automatic food consumption - finished

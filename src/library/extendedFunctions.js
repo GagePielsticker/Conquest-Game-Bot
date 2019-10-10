@@ -3,13 +3,14 @@ module.exports = client => {
      * Dependencies
      */
   const fs = require('fs')
+  const moment = require('moment')
 
   /**
      * Pretty Logging Outputs
      * @param {String} String
      */
   const chalk = require('chalk')
-  client.log = string => console.log(`${chalk.green(client.moment().format('MMMM Do YYYY, h:mm:ss a'))} :: ${string}`)
+  client.log = string => console.log(`${chalk.green(moment().format('MMMM Do YYYY, h:mm:ss a'))} :: ${string}`)
 
   /**
      * Reloads commands into the commands array

@@ -2,9 +2,16 @@ module.exports = client => {
   // get needed libraries
   const Chance = require('chance')
   const chance = new Chance()
+  const moment = require('moment')
 
   /** @namespace */
   client.game = {
+
+    /**
+     * Contains the user id's of everyone currently traveling
+     */
+    movementCooldown: new Map(),
+    scoutCooldown: new Map(),
 
     /**
       * Create a database object for the guild
@@ -100,11 +107,6 @@ module.exports = client => {
     },
 
     /**
-     * Contains the user id's of everyone currently traveling
-     */
-    movementCooldown: [],
-
-    /**
       * Moves user to location
       * @param {String} uid a discord user id
       * @param {Integer} xPos position on map grid
@@ -120,7 +122,7 @@ module.exports = client => {
       if (entry == null) await client.game.createTile(xPos, yPos)
 
       // check if user is in cooldown
-      if (client.game.movementCooldown.includes(uid)) return Promise.reject('User is currently Travelling.')
+      if (client.game.movementCooldown.has(uid)) return Promise.reject('User is currently Travelling.')
 
       // check to make sure target is in bounds
       if (xPos > client.settings.game.map.xMax || xPos < client.settings.game.map.xMin) return Promise.reject('Invalid location.')
@@ -130,11 +132,14 @@ module.exports = client => {
       const travelTime = await client.game.calculateTravelTime(userEntry.xPos, userEntry.yPos, xPos, yPos)
 
       // add user to cooldown array and setup task
-      client.game.movementCooldown.push(uid)
+      client.game.movementCooldown.set(uid, {
+        startTime: moment().unix(),
+        endTime: moment().unix() + travelTime
+      })
 
       setTimeout(() => {
         // remove user from cooldown array
-        client.game.movementCooldown.splice(client.game.movementCooldown.indexOf(uid), 1)
+        client.game.movementCooldown.delete(uid)
 
         // move user in database
         client.database.collection('users').updateOne({ id: uid }, { $set: { xPos: xPos, yPos: yPos } })
@@ -425,6 +430,173 @@ module.exports = client => {
       await client.database.collection('users').updateOne({ uid: uid }, { $set: { cities: userEntry.cities } })
       await client.database.collection('map').updateOne({ xPos: xPos, yPos: yPos }, { $set: { 'city.population': mapEntry.city.population } })
 
+      return Promise.resolve()
+    },
+
+    /**
+     * Scouts the tile the user is currently on
+     * @param {String} uid a discord user id
+     */
+    scoutTile: async (uid) => {
+      // check if user exist
+      const userEntry = await client.database.collection('users').findOne({ uid: uid })
+      if (userEntry == null) return Promise.reject('User does not exist in database.')
+
+      // check if tile exist
+      const mapEntry = await client.database.collection('map').findOne({ xPos: userEntry.xPos, yPos: userEntry.yPos })
+      if (mapEntry == null) return Promise.reject('Map tile does not exist in database.')
+
+      // check if user is on cooldown
+      if (client.game.scoutCooldown.has(uid)) return Promise.reject('User is currently scouting a tile.')
+
+      // push tile to array and write to database
+      await userEntry.scoutedTiles.push({ xPos: userEntry.xPos, yPos: userEntry.ypos })
+
+      // scan time calculation
+      const time = 60000
+
+      // add user to cooldown array and setup task
+      client.game.scoutCooldown.set(uid, {
+        startTime: moment().unix(),
+        endTime: moment().unix() + time
+      })
+
+      setTimeout(() => {
+        // remove user from cooldown array
+        client.game.scoutCooldown.delete(uid)
+
+        // move user in database
+        client.database.collection('users').updateOne({ uid: uid }, { $set: { scoutedTiles: userEntry.scoutedTiles } })
+      }, time)
+
+      // resolve cooldown time and map entry
+      return Promise.resolve(time, mapEntry)
+    },
+
+    /**
+     * Generates the gold in the users cities
+     * @param {String} uid Users discord id
+     */
+    generateGold: async (uid) => {
+      // check if user exist
+      const userEntry = await client.database.collection('users').findOne({ uid: uid })
+      if (userEntry == null) return Promise.reject('User does not exist in database.')
+
+      let goldGenerated = 0
+
+      // for each city
+      userEntry.cities.forEach(async cityEntry => {
+        // calculate gold creation
+        goldGenerated += Math.ceil(cityEntry.population.miners)
+      })
+
+      // add gold to user wallet
+      userEntry.gold += goldGenerated
+
+      // write user to user database
+      await client.database.collection('users').updateOne({ uid: uid }, { $set: { gold: userEntry.gold } })
+
+      // resolve once complete
+      return Promise.resolve()
+    },
+
+    /**
+     * Generates the food in the users cities
+     * @param {String} uid Users discord id
+     */
+    generateFood: async (uid) => {
+      // check if user exist
+      const userEntry = await client.database.collection('users').findOne({ uid: uid })
+      if (userEntry == null) return Promise.reject('User does not exist in database.')
+
+      // for each city
+      userEntry.cities.forEach(async cityEntry => {
+        // calculate generated food
+        const generatedFood = Math.ceil(cityEntry.population.farmers * 1.5)
+
+        // if they make more food then they can store, cap it
+        if (cityEntry.resources.maxFood < cityEntry.resources.food + generatedFood) cityEntry.resources.food = cityEntry.resources.maxFood
+        else cityEntry.resources.food += generatedFood
+
+        // write city to map database
+        await client.database.collection('map').updateOne({ xPos: cityEntry.xPos, yPos: cityEntry.yPos }, { $set: { city: cityEntry } })
+      })
+
+      // write user to user database
+      await client.database.collection('users').updateOne({ uid: uid }, { $set: { cities: userEntry.cities } })
+
+      // resolve once complete
+      return Promise.resolve()
+    },
+
+    /**
+     * Generates the resource in the users cities
+     * @param {String} uid Users discord id
+     */
+    generateResource: async (uid) => {
+      // check if user exist
+      const userEntry = await client.database.collection('users').findOne({ uid: uid })
+      if (userEntry == null) return Promise.reject('User does not exist in database.')
+
+      // for each city
+      userEntry.cities.forEach(async cityEntry => {
+        // calculate growth of resource
+        if (cityEntry.resources.stone + cityEntry.population.workers > cityEntry.resources.maxStone) cityEntry.resources.stone = cityEntry.resources.maxStone
+        else cityEntry.resources.stone += cityEntry.population.workers
+
+        if (cityEntry.resources.metal + cityEntry.population.workers > cityEntry.resources.maxMetal) cityEntry.resources.metal = cityEntry.resources.maxMetal
+        else cityEntry.resources.metal += cityEntry.population.workers
+
+        if (cityEntry.resources.wood + cityEntry.population.workers > cityEntry.resources.maxWood) cityEntry.resources.wood = cityEntry.resources.maxWood
+        else cityEntry.resources.wood += cityEntry.population.workers
+
+        // write city to map database
+        await client.database.collection('map').updateOne({ xPos: cityEntry.xPos, yPos: cityEntry.yPos }, { $set: { city: cityEntry } })
+      })
+
+      // write user to user database
+      await client.database.collection('users').updateOne({ uid: uid }, { $set: { cities: userEntry.cities } })
+
+      // resolve once complete
+      return Promise.resolve()
+    },
+
+    /**
+     * Consume food function
+     * @param {String} uid Users discord id
+     */
+    consumeFood: async (uid) => {
+      // check if user exist
+      const userEntry = await client.database.collection('users').findOne({ uid: uid })
+      if (userEntry == null) return Promise.reject('User does not exist in database.')
+
+      // for each city
+      userEntry.cities.forEach(async cityEntry => {
+        // get total population
+        const totalPopulation = Object.values(cityEntry.population).reduce((a, b) => a + b, 0)
+
+        // get total food
+        const food = cityEntry.resources.food
+
+        // if there is less food then there is population, remove some population, else add population
+        if (food < totalPopulation) {
+          // calculate popualtion loss
+          const populationLoss = Math.abs(food - totalPopulation)
+
+          // calculate population loss (percent based on jobs)
+          Object.keys(cityEntry.population).forEach(key => {
+            cityEntry.population[key] -= Math.ceil(populationLoss * (cityEntry.population[key] / totalPopulation))
+          })
+        }
+
+        // write city to map database
+        await client.database.collection('map').updateOne({ xPos: cityEntry.xPos, yPos: cityEntry.yPos }, { $set: { city: cityEntry } })
+      })
+
+      // write user to user database
+      await client.database.collection('users').updateOne({ uid: uid }, { $set: { cities: userEntry.cities } })
+
+      // resolve once complete
       return Promise.resolve()
     }
   }
