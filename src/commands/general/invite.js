@@ -8,7 +8,14 @@ module.exports.load = client => {
     hasAccountCheck: false,
 
     run (message) {
-      message.reply(`You can invite me to your guild here, ${client.settings.bot.inviteURL}`)
+      message.channel.send(
+        new client.discord.MessageEmbed()
+          .setColor(client.settings.bot.embedColor)
+          .setTitle(":mailbox_with_mail: Invite")
+          .setDescription(`Invite the bot [here](${client.settings.bot.inviteURL}!`)
+          .setFooter(message.author.tag)
+          .setTimestamp()
+      )
     }
   }
 
