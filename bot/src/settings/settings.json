@@ -10,7 +10,11 @@
         "botDescription" : "Welcome to Conquest - A mmorpg following adventurers travels in the medieval time and their attempts to rule, create, and explore the world!",
         "inviteURL" : "https://discordapp.com/oauth2/authorize?&client_id=595817865492430848&scope=bot&permissions=10304",
         "supportServer" : "https://discord.gg/8v8KYkc",
-        "collectorTimeout" : 80
+        "collectorTimeout" : 80,
+        "emojis": {
+            "yes": "632338109517791243",
+            "no": "632338109534699560"
+        }
     },
 
     "game" : {
