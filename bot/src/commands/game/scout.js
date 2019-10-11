@@ -25,63 +25,53 @@ module.exports.load = client => {
           .setTimestamp()
       )
         .then(async confirmMsg => {
-          confirmMsg.react(client.emoji.yes)
-          confirmMsg.react(client.emoji.no)
-          const reactions = await confirmMsg.awaitReactions(
-            (reaction, user) => user.equals(message.author) && [client.emoji.yes.id, client.emoji.no.id].includes(reaction._emoji.id),
-            {
-              max: 1,
-              time: 30000
-            }
-          )
-          confirmMsg.reactions.removeAll()
-
-          const reaction = reactions.first()
-          if (!reaction) return client.sendError(message, 'Did not react in time, cancelled', confirmMsg)
-          const emoji = reaction.emoji
-          if (emoji.id !== client.emoji.yes.id) {
-            return confirmMsg.edit(
-              new client.discord.MessageEmbed()
-                .setColor('RED')
-                .setTitle('Cancelled Scout')
-                .setFooter(message.author.tag)
-                .setTimestamp()
-            )
-          }
-
-          client.game.scoutTile(message.author.id)
-            .then(response => {
-              const { time, mapEntry } = response
+          client.confirm(message, confirmMsg, {
+            no: () => {
               confirmMsg.edit(
                 new client.discord.MessageEmbed()
-                  .setColor(client.settings.bot.embedColor)
-                  .setTitle('Scouting Tile')
-                  .setDescription(`Tile: X: ${mapEntry.xPos}, Y: ${mapEntry.yPos}\n\nThis message will be changed when time is over!`)
-                  .addField('Will be done scouting in', `${humanizeDuration(time)}`)
+                  .setColor('RED')
+                  .setTitle('Cancelled Scout')
                   .setFooter(message.author.tag)
                   .setTimestamp()
               )
-                .then((msg) => {
-                  setTimeout(async () => {
-                    const embed = new client.discord.MessageEmbed()
+            },
+            notime: () => {
+              client.sendError(message, 'Did not react in time, cancelled', confirmMsg)
+            },
+            yes: () => {
+              client.game.scoutTile(message.author.id)
+                .then(response => {
+                  const { time, mapEntry } = response
+                  confirmMsg.edit(
+                    new client.discord.MessageEmbed()
                       .setColor(client.settings.bot.embedColor)
-                      .setTitle('Scouted Tile')
+                      .setTitle('Scouting Tile')
+                      .setDescription(`Tile: X: ${mapEntry.xPos}, Y: ${mapEntry.yPos}\n\nThis message will be changed when time is over!`)
+                      .addField('Will be done scouting in', `${humanizeDuration(time)}`)
                       .setFooter(message.author.tag)
                       .setTimestamp()
-                    let baseDescription = `Tile: X: ${mapEntry.xPos}, Y: ${mapEntry.yPos}\n\n`
-                    if (mapEntry.city != null) {
-                      baseDescription += `You found a level ${mapEntry.city.level} city!`
-                      embed.addField('')
-                      if (mapEntry.city.owner) {
-                        const owner = await client.database.collection('users').findOne({ uid: mapEntry.city.owner })
-                        const ownerUser = client.users.get(mapEntry.city.owner)
-                        if (owner.flagURL != null) embed.setThumbnail(owner.flagURL)
-                        embed.addField('Owner', ownerUser.username)
-                        embed.addField('Empire Name', owner.empireName)
-                      } else {
-                        embed.addField('Owner', 'NPC')
-                      }
-                      embed.addField('Total Resources', `${
+                  )
+                    .then((msg) => {
+                      setTimeout(async () => {
+                        const embed = new client.discord.MessageEmbed()
+                          .setColor(client.settings.bot.embedColor)
+                          .setTitle('Scouted Tile')
+                          .setFooter(message.author.tag)
+                          .setTimestamp()
+                        let baseDescription = `Tile: X: ${mapEntry.xPos}, Y: ${mapEntry.yPos}\n\n`
+                        if (mapEntry.city != null) {
+                          baseDescription += `You found a level ${mapEntry.city.level} city!`
+                          embed.addField('')
+                          if (mapEntry.city.owner) {
+                            const owner = await client.database.collection('users').findOne({ uid: mapEntry.city.owner })
+                            const ownerUser = client.users.get(mapEntry.city.owner)
+                            if (owner.flagURL != null) embed.setThumbnail(owner.flagURL)
+                            embed.addField('Owner', ownerUser.username)
+                            embed.addField('Empire Name', owner.empireName)
+                          } else {
+                            embed.addField('Owner', 'NPC')
+                          }
+                          embed.addField('Total Resources', `${
                       (
                           mapEntry.city.resources.stone +
                           mapEntry.city.resources.metal +
@@ -90,28 +80,30 @@ module.exports.load = client => {
                       ) // uber i hate you please fix resources you stupid weeb
                         .toLocaleString()
                     } combined resources.`
-                      )
-                      embed.addField('Total Population', `${
+                          )
+                          embed.addField('Total Population', `${
                       (
                         mapEntry.city.population
                           .reduce((a, b) => a + b, 0)
                       )
                         .toLocaleString()
                     } people.`
-                      )
-                      embed.addField('In Stasis', mapEntry.city.inStasis ? 'Yes' : 'No')
-                    } else {
-                      baseDescription += 'Nothing was found!'
-                    }
-                    if (mapEntry.hasWounder) baseDescription += '\nTile has a wounder!'
-                    else baseDescription += '\nTile has no wounder.'
-                    embed.setDescription(baseDescription)
+                          )
+                          embed.addField('In Stasis', mapEntry.city.inStasis ? 'Yes' : 'No')
+                        } else {
+                          baseDescription += 'Nothing was found!'
+                        }
+                        if (mapEntry.hasWounder) baseDescription += '\nTile has a wounder!'
+                        else baseDescription += '\nTile has no wounder.'
+                        embed.setDescription(baseDescription)
 
-                    msg.edit(embed)
-                  }, time)
+                        msg.edit(embed)
+                      }, time)
+                    })
                 })
-            })
-            .catch(e => client.sendError(message, e))
+                .catch(e => client.sendError(message, e))
+            }
+          })
         })
     }
   }

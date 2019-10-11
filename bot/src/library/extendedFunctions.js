@@ -87,4 +87,33 @@ module.exports = client => {
       .setColor(client.settings.bot.embedColor)
     message.channel.send(embed)
   }
+
+  /**
+   * Creates confirm with emojis n stuff
+   * @param {Object} ogmsg Invoking message
+   * @param {Object} message Message to create confirm on
+   * @param {Object} fn obj of functions to run
+   * @param {Function} fn.yes Ran when responded yes
+   * @param {Function} fn.no Ran when responded no
+   * @param {Function} fn.notime Ran when user runs out of time
+   */
+  client.confirm = async (ogmsg, message, fn) => {
+    message.react(client.emoji.yes)
+    message.react(client.emoji.no)
+    const reactions = await message.awaitReactions(
+      (reaction, user) => user.equals(ogmsg.author) && [client.emoji.yes.id, client.emoji.no.id].includes(reaction._emoji.id),
+      {
+        max: 1,
+        time: 30000
+      }
+    )
+
+    message.reactions.removeAll()
+
+    const reaction = reactions.first()
+    if (!reaction) return fn.notime()
+    const emoji = reaction.emoji
+    if (emoji.id !== client.emoji.yes.id) return fn.no()
+    return fn.yes()
+  }
 }
