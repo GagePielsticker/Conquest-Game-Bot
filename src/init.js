@@ -23,4 +23,4 @@ if(process.argv.includes("-d")) {
 }
 
 // Initialize bot
-client.login(client.settings.bot.prodToken)
+client.login(client.settings.bot.token)
