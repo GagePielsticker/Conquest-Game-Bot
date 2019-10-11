@@ -12,7 +12,7 @@ module.exports.load = client => {
         new client.discord.MessageEmbed()
           .setColor(client.settings.bot.embedColor)
           .setTitle(':mailbox_with_mail: Invite')
-          .setDescription(`Invite the bot [here](${client.settings.bot.inviteURL})`)
+          .setDescription(`Invite the bot [here](${client.settings.bot.inviteURL})!`)
           .setFooter(message.author.tag)
           .setTimestamp()
       )
