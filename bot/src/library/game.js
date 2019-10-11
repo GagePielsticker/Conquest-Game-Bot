@@ -495,7 +495,10 @@ module.exports = client => {
       }, time)
 
       // resolve cooldown time and map entry
-      return Promise.resolve(time, mapEntry)
+      return Promise.resolve({
+        time: time,
+        map: mapEntry
+      })
     },
 
     /**
