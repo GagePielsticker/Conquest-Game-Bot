@@ -147,7 +147,7 @@ module.exports = client => {
       }, travelTime)
 
       // return resolve that timeout has been set
-      return Promise.resolve()
+      return Promise.resolve(travelTime)
     },
 
     /**
@@ -196,7 +196,7 @@ module.exports = client => {
         if(city.name.toLowerCase() == name.toLowerCase()) a = true
       })
       if(a) return Promise.reject('User has a city named this already.')
-      
+
       const cityObject = {
         level: 1,
         xPos: userEntry.xPos,
