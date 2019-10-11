@@ -3,6 +3,7 @@ module.exports = client => {
   const Chance = require('chance')
   const chance = new Chance()
   const moment = require('moment')
+  const nameGenerator = require('project-name-generator')
 
   /** @namespace */
   client.game = {
@@ -80,7 +81,7 @@ module.exports = client => {
           yPos: yPos,
           inStasis: false,
           owner: null,
-          name: chance.city(),
+          name: nameGenerator({words : 2}).dashed,
           tradeRoutes: [],
           resources: {
             stone: Math.floor(Math.random() * 11),
@@ -189,6 +190,13 @@ module.exports = client => {
       // check if user has settler available
       if (!userEntry.hasSettler) return Promise.reject('User does not have available settler.')
 
+      //check to make sure user doesnt already have a place named that
+      let a = false
+      userEntry.cities.forEach(city => {
+        if(city.name.toLowerCase() == name.toLowerCase()) a = true
+      })
+      if(a) return Promise.reject('User has a city named this already.')
+      
       const cityObject = {
         level: 1,
         xPos: userEntry.xPos,

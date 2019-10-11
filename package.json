@@ -18,6 +18,7 @@
     "moment": "^2.24.0",
     "mongodb": "^3.3.2",
     "node-cron": "^2.0.3",
+    "project-name-generator": "^2.1.7",
     "standard": "^14.3.1",
     "systeminformation": "^4.14.11"
   }
