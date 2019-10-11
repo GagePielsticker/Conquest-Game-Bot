@@ -4,7 +4,7 @@ module.exports.load = client => {
   const command = {
     name: 'Scout',
     category: 'game',
-    description: 'Scouts the tile you\'re current on.',
+    description: 'Scouts the tile you\'re currently on.',
     usage: `${client.settings.bot.prefix}scout`,
     requiredPermission: null,
     hasAccountCheck: false,
