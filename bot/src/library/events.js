@@ -8,8 +8,8 @@ module.exports = client => {
     await client.connectDb().then(() => client.log('DB Connected'))
     await client.user.setActivity(client.settings.bot.activity)
     client.emoji = {}
-    Object.keys(client.settings.emojis).forEach(emojiKey => {
-      client.emoji[emojiKey] = client.emojis.get(client.settings.emojis[emojiKey])
+    Object.keys(client.settings.bot.emojis).forEach(emojiKey => {
+      client.emoji[emojiKey] = client.emojis.get(client.settings.bot.emojis[emojiKey])
     })
   })
 
