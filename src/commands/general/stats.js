@@ -28,7 +28,7 @@ module.exports.load = client => {
         .addField('Uptime', `\`${humanizeDuration(client.uptime)}\``, true)
         .addField('Invite Link', `[Click Here](${client.settings.bot.inviteURL})`, true)
         .addField('Support Server', `[Click Here](${client.settings.bot.supportServer})`, true)
-        .addField('Developer', '`uber#0001`', true)
+        .addField('Developer', '`uber#0001\nJPBBerry#0001`', true)
         .setFooter(`${message.author.username}#${message.author.discriminator}`)
         .setTimestamp()
         .setColor(client.settings.bot.embedColor)
