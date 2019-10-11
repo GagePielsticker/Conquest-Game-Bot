@@ -31,7 +31,7 @@
     - miners
         - generate gold directly
         - max workers dictated by cities quarry level
-        - generate gold @ 1:15 ratio
+        - generate gold @ 1:1 ratio
     - workers
         - stone
         - metal
@@ -138,8 +138,6 @@ calculateLevelCost - finished - tested
 calculateMaxPopulation - finished - tested
 
 tile scouting - finished - tested
-
-leaderboards
 
 automatic gold generation - finished
 automatic food generation - finished

@@ -12,6 +12,7 @@ require('./library/extendedFunctions.js')(client)
 require('./library/events.js')(client)
 require('./library/database.js')(client)
 require('./library/game.js')(client)
+require('./library/cronJobs.js')(client)
 // require('./library/dbl.js')(client)
 
 // Initialize bot

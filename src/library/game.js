@@ -580,6 +580,9 @@ module.exports = client => {
 
         // if there is less food then there is population, remove some population, else add population
         if (food < totalPopulation) {
+          // set food to 0 since they ate it all
+          cityEntry.resources.food = 0
+
           // calculate popualtion loss
           const populationLoss = Math.abs(food - totalPopulation)
 
@@ -587,6 +590,15 @@ module.exports = client => {
           Object.keys(cityEntry.population).forEach(key => {
             cityEntry.population[key] -= Math.ceil(populationLoss * (cityEntry.population[key] / totalPopulation))
           })
+        } else if (food > totalPopulation) {
+          // calculate popualtion growth
+          const populationGrowth = Math.ceil(Math.abs((totalPopulation - food) / 2))
+
+          // remove eaten food
+          cityEntry.resources.food -= totalPopulation
+
+          // add unemployed citizens to the population
+          cityEntry.population.unemployed += populationGrowth
         }
 
         // write city to map database
