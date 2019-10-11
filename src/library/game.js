@@ -81,7 +81,7 @@ module.exports = client => {
           yPos: yPos,
           inStasis: false,
           owner: null,
-          name: nameGenerator({words : 2}).dashed,
+          name: nameGenerator({ words: 2 }).dashed,
           tradeRoutes: [],
           resources: {
             stone: Math.floor(Math.random() * 11),
@@ -190,12 +190,12 @@ module.exports = client => {
       // check if user has settler available
       if (!userEntry.hasSettler) return Promise.reject('User does not have available settler.')
 
-      //check to make sure user doesnt already have a place named that
+      // check to make sure user doesnt already have a place named that
       let a = false
       userEntry.cities.forEach(city => {
-        if(city.name.toLowerCase() == name.toLowerCase()) a = true
+        if (city.name.toLowerCase() == name.toLowerCase()) a = true
       })
-      if(a) return Promise.reject('User has a city named this already.')
+      if (a) return Promise.reject('User has a city named this already.')
 
       const cityObject = {
         level: 1,
