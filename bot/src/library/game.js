@@ -443,6 +443,23 @@ module.exports = client => {
 
     /**
      * Scouts the tile the user is currently on
+     * @param {Integer} xPos a position on map
+     * @param {Integer} yPos a position on map
+     */
+    calculateScoutTime: async (xPos, yPos) => {
+      // check if tile exist
+      const mapEntry = await client.database.collection('map').findOne({ xPos: userEntry.xPos, yPos: userEntry.yPos })
+      if (mapEntry == null) return Promise.reject('Map tile does not exist in database.')
+
+      //do calculation
+      let time = 60000
+
+      return Promise.resolve(time)
+    },
+
+
+    /**
+     * Scouts the tile the user is currently on
      * @param {String} uid a discord user id
      */
     scoutTile: async (uid) => {
@@ -461,7 +478,7 @@ module.exports = client => {
       await userEntry.scoutedTiles.push({ xPos: userEntry.xPos, yPos: userEntry.ypos })
 
       // scan time calculation
-      const time = 60000
+      const time = await client.game.calculateScoutTime(userEntry.xPos, userEntry.yPos)
 
       // add user to cooldown array and setup task
       client.game.scoutCooldown.set(uid, {
