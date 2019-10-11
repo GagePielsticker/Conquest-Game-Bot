@@ -36,7 +36,7 @@ module.exports = client => {
         uid: uid,
         xPos: xPos,
         yPos: yPos,
-        gold: 0,
+        gold: 200,
         empireName: null,
         flagURL: null,
         hasSettler: true,
