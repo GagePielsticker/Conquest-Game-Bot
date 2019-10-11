@@ -1,0 +1,11 @@
+website - https://conquestsim.io/ - WIP
+
+discord - https://discord.gg/8v8KYkc
+
+invite - https://discordapp.com/oauth2/authorize?&client_id=595817865492430848&scope=bot&permissions=10304
+
+trello - Conquest - public
+
+bot - https://github.com/GagePielsticker/Conquest - restricted
+
+website - https://github.com/GagePielsticker/Conquest-web - restricted

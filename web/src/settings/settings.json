@@ -1,0 +1,9 @@
+{
+    "auth" : {
+        "clientID" : "a",
+        "clientSecret" : "a",
+        "callbackURL" : "a",
+        "scope" : ["identify"],
+        "sessionSecret" : "Th1sizN0t4u2c."
+    }
+}

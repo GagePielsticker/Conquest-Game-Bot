@@ -1,7 +1,0 @@
-Trello
----------
-https://trello.com/b/89FMnVAU/conquest-bot - public
-
-github
---------
-https://github.com/GagePielsticker/Conquest - private
