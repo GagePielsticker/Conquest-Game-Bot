@@ -448,7 +448,7 @@ module.exports = client => {
      */
     calculateScoutTime: async (xPos, yPos) => {
       // check if tile exist
-      const mapEntry = await client.database.collection('map').findOne({ xPos: userEntry.xPos, yPos: userEntry.yPos })
+      const mapEntry = await client.database.collection('map').findOne({ xPos: xPos, yPos: yPos })
       if (mapEntry == null) return Promise.reject('Map tile does not exist in database.')
 
       //do calculation
