@@ -1,5 +1,6 @@
 module.exports.load = client => {
   const humanizeDuration = require('humanize-duration')
+  const moment = require('moment')
 
   const command = {
     name: 'Scout',
@@ -10,6 +11,8 @@ module.exports.load = client => {
     hasAccountCheck: false,
 
     async run (message) {
+      const cooldown = client.game.scoutCooldown.get(message.author.id)
+      if (cooldown) return client.sendError(message, `Already scouting tile, wait ${humanizeDuration(cooldown.endTime - moment().unix())}`)
       const execUser = await client.database.collection('users').findOne({ uid: message.author.id })
       const travelTime = await client.game.calculateScoutTime(execUser.xPos, execUser.yPos)
       message.channel.send(
@@ -25,17 +28,19 @@ module.exports.load = client => {
           confirmMsg.react(client.emoji.yes)
           confirmMsg.react(client.emoji.no)
           const reactions = await confirmMsg.awaitReactions(
-            (reaction, user) => user.equals(message.author) && [client.emoji.yes.id, client.emoji.no.id].includes(reaction.id),
+            (reaction, user) => user.equals(message.author) && [client.emoji.yes.id, client.emoji.no.id].includes(reaction._emoji.id),
             {
               max: 1,
               time: 30000
             }
           )
+          confirmMsg.reactions.removeAll()
 
-          const emoji = reactions.first()
-          if (!emoji) return client.sendError(message, 'Did not react in time, cancelled')
+          const reaction = reactions.first()
+          if (!reaction) return client.sendError(message, 'Did not react in time, cancelled', confirmMsg)
+          const emoji = reaction.emoji
           if (emoji.id !== client.emoji.yes.id) {
-            return message.channel.send(
+            return confirmMsg.edit(
               new client.discord.MessageEmbed()
                 .setColor('RED')
                 .setTitle('Cancelled Scout')
@@ -45,8 +50,9 @@ module.exports.load = client => {
           }
 
           client.game.scoutTile(message.author.id)
-            .then((time, mapEntry) => {
-              message.channel.send(
+            .then(response => {
+              const { time, mapEntry } = response
+              confirmMsg.edit(
                 new client.discord.MessageEmbed()
                   .setColor(client.settings.bot.embedColor)
                   .setTitle('Scouting Tile')

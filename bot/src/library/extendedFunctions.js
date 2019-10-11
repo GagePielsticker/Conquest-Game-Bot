@@ -60,14 +60,16 @@ module.exports = client => {
      * Creates an error discord embed and sends
      * @param {Object} message Discords message event fire
      * @param {String} string
+     * @param {Object} edit Message to edit, if supplied will be editted rather than sent to channel.
      */
-  client.sendError = (message, string) => {
+  client.sendError = (message, string, edit) => {
     const embed = new client.discord.MessageEmbed()
       .setTitle(':x: Error')
       .setDescription(`${string}`)
       .setFooter(`${message.author.tag}`)
       .setTimestamp()
       .setColor(client.settings.bot.embedColor)
+    if (edit) return edit.edit(embed)
     message.channel.send(embed)
   }
 
