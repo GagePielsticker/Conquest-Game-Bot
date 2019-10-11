@@ -4,6 +4,7 @@ module.exports.load = client => {
      */
   const command = {
     name: 'Eval',
+    category: 'dev',
     description: 'Evaluates code for developers',
     usage: 'eval {code block}',
     requiredPermission: null,
