@@ -4,7 +4,8 @@
   "description": "A discord based mmo",
   "main": "./src/init.js",
   "scripts": {
-    "start": "node ./src/init.js"
+    "prod": "node ./src/init.js",
+    "dev": "node ./src/init.js -d"
   },
   "author": "Gage Pielsticker",
   "license": "MIT",

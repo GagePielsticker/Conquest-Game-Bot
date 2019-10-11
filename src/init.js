@@ -13,7 +13,14 @@ require('./library/events.js')(client)
 require('./library/database.js')(client)
 require('./library/game.js')(client)
 require('./library/cronJobs.js')(client)
-// require('./library/dbl.js')(client)
+
+// checks if dev mode is set to true
+if(process.argv.includes("-d")) {
+    client.settings.bot.token = client.settings.bot.betaToken
+    client.settings.bot.prefix = client.settings.bot.betaPrefix
+} else {
+    require('./library/dbl.js')(client)
+}
 
 // Initialize bot
-client.login(client.settings.bot.token)
+client.login(client.settings.bot.prodToken)
