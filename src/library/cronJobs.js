@@ -48,12 +48,12 @@ module.exports = client => {
      */
     eventLoop: setInterval(async () => {
       let userArray
-      if (taskList.length > 0) {
+      if (client.jobs.taskList.length > 0) {
         userArray = await client.database.collection('users').find({}).toArray()
       }
-      for (let index = 0; index < taskList.length; index++) {
+      for (let index = 0; index < client.jobs.taskList.length; index++) {
         for (let userIndex = 0; userIndex < userArray.length; userIndex++) {
-          await taskList[index].exec(userArray[userIndex].uid)
+          await client.jobs.taskList[index].exec(userArray[userIndex].uid)
         }
       }
       client.jobs.taskList = []

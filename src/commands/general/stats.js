@@ -15,7 +15,7 @@ module.exports.load = client => {
       const mem = await si.mem()
       const operating = await si.osInfo()
       const embed = new client.discord.MessageEmbed()
-        .setTitle('Statistics')
+        .setTitle(':bar_chart: Statistics')
         .setDescription(client.settings.bot.botDescription)
         .addField('Users', `\`${client.users.size}\``, true)
         .addField('Guilds', `\`${client.guilds.size}\``, true)

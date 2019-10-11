@@ -12,7 +12,7 @@ module.exports = client => {
       MongoClient.connect(client.settings.database.mongodbURL, { useNewUrlParser: true }, async (err, data) => {
         client.database = await data.db(client.settings.database.databaseName)
         if (err) return reject(`Error connecting to db: ${err}`)
-        else await resolve()
+        else resolve()
       })
     })
   }
