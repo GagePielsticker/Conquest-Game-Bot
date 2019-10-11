@@ -11,7 +11,7 @@ module.exports = client => {
      * Handles Population Decay
      */
     populationJob: cron.schedule('0 */12 * * *', () => {
-      taskList.push({
+      client.jobs.taskList.push({
         exec: client.game.consumeFood
       })
     }),
@@ -20,7 +20,7 @@ module.exports = client => {
      * Handles gold Growth
      */
     goldJob: cron.schedule('0 */1 * * *', () => {
-      taskList.push({
+      client.jobs.taskList.push({
         exec: client.game.generateGold
       })
     }),
@@ -29,7 +29,7 @@ module.exports = client => {
      * Handles resource Growth
      */
     resourceJob: cron.schedule('0 */5 * * *', () => {
-      taskList.push({
+      client.jobs.taskList.push({
         exec: client.game.generateResource
       })
     }),
@@ -38,7 +38,7 @@ module.exports = client => {
      * Handles food Growth
      */
     foodJob: cron.schedule('0 */12 * * *', () => {
-      taskList.push({
+      client.jobs.taskList.push({
         exec: client.game.generateFood
       })
     }),
