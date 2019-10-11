@@ -10,8 +10,8 @@ module.exports.load = client => {
     run (message) {
       const cmd = message.content.split(' ').splice(1)[0]
       if (cmd) {
-        const command = client.commands.find(x => x.name.toLowerCase() == cmd.toLowerCase())
-        if (!command || command.category == 'dev') return client.sendError(message, `Invalid command: \`${cmd}\``)
+        const command = client.commands.find(x => x.name.toLowerCase() === cmd.toLowerCase())
+        if (!command || command.category === 'dev') return client.sendError(message, `Invalid command: \`${cmd}\``)
         return message.channel.send(
           new client.discord.MessageEmbed()
             .setColor(client.settings.bot.embedColor)
@@ -29,7 +29,7 @@ module.exports.load = client => {
         .setFooter(message.author.tag)
         .setTimestamp()
 
-      client.commands.map(x => x.category).filter(x => x != 'dev') // remove dev
+      client.commands.map(x => x.category).filter(x => x !== 'dev') // remove dev
         .reduce((a, b) => { // remove dupes
           a = a || []
           if (!a.includes(b)) a.push(b)
@@ -38,7 +38,7 @@ module.exports.load = client => {
         .forEach(category => {
           embed.addField((category.charAt(0).toUpperCase() + category.slice(1)), // make 1st character uppercase
             '```' + '\n' +
-                    client.commands.filter(x => x.category == category).map(x => x.name.toLowerCase()).join('\n') + '\n' +
+                    client.commands.filter(x => x.category === category).map(x => x.name.toLowerCase()).join('\n') + '\n' +
                     '```'
           )
         })

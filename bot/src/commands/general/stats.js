@@ -19,7 +19,7 @@ module.exports.load = client => {
         .setDescription(client.settings.bot.botDescription)
         .addField('Users', `\`${client.users.size}\``, true)
         .addField('Guilds', `\`${client.guilds.size}\``, true)
-        .addField('Language', '\`NodeJS\`', true)
+        .addField('Language', '`NodeJS`', true)
         .addField('RAM\'s', `\`${Math.floor(mem.used / 1000000000)}gb/${Math.floor(mem.total / 1000000000)}gb\``, true)
         .addField('CPU', `\`${cpu.cores} Cores\``, true)
         .addField('Platform', `\`${operating.platform}\``, true)
