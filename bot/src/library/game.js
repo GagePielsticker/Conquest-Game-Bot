@@ -143,7 +143,7 @@ module.exports = client => {
         client.game.movementCooldown.delete(uid)
 
         // move user in database
-        client.database.collection('users').updateOne({ id: uid }, { $set: { xPos: xPos, yPos: yPos } })
+        client.database.collection('users').updateOne({ uid: uid }, { $set: { xPos: xPos, yPos: yPos } })
       }, travelTime)
 
       // return resolve that timeout has been set
