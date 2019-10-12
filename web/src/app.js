@@ -52,10 +52,8 @@ app.use(passport.session())
 // get and use routers
 const indexRouter = require('./routes/index')
 const authRouter = require('./routes/auth')
-const apiRouter = require('./routes/api')
 
 app.use('/', indexRouter)
-app.use('/api', apiRouter)
 app.use('/auth', authRouter)
 
 // catch 404 and forward to error handler
