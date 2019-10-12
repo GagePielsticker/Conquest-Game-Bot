@@ -40,10 +40,10 @@ module.exports.load = client => {
             },
             yes: () => {
               client.game.scoutTile(message.author.id)
-                .then(response => {
+                .then(async response => {
                   let { time, mapEntry } = response
                   if (message.content.match(/-d/) && client.beta) time = 1000
-                  confirmMsg.edit(
+                  const msg = time != null ? await confirmMsg.edit(
                     new client.discord.MessageEmbed()
                       .setColor(client.settings.bot.embedColor)
                       .setTitle('Scouting Tile')
@@ -51,28 +51,27 @@ module.exports.load = client => {
                       .addField('Will be done scouting in', `\`${humanizeDuration(time)}\``)
                       .setFooter(message.author.tag)
                       .setTimestamp()
-                  )
-                    .then((msg) => {
-                      setTimeout(async () => {
-                        const embed = new client.discord.MessageEmbed()
-                          .setColor(client.settings.bot.embedColor)
-                          .setTitle('Scouted Tile')
-                          .setFooter(message.author.tag)
-                          .setTimestamp()
-                        let baseDescription = `Tile: X: \`${mapEntry.xPos}\`, Y: \`${mapEntry.yPos}\`\n\n`
-                        if (mapEntry.city != null) {
-                          baseDescription += `You found a level \`${mapEntry.city.level}\` city!`
-                          if (mapEntry.city.owner) {
-                            const owner = await client.database.collection('users').findOne({ uid: mapEntry.city.owner })
-                            const ownerUser = client.users.get(mapEntry.city.owner)
-                            if (owner.flagURL != null) embed.setThumbnail(owner.flagURL)
-                            embed.addField('Owner', `\`${ownerUser.username}\``, true)
-                            if (owner.empireName != null) embed.addField('Empire Name', `\`${owner.empireName}\``, true)
-                          } else {
-                            embed.addField('Owner', '`NPC`', true)
-                          }
-                          if (mapEntry.city.name) embed.addField('City Name', `\`${mapEntry.city.name}\``, true)
-                          embed.addField('Total Resources', `\`${
+                  ) : confirmMsg
+                  setTimeout(async () => {
+                    const embed = new client.discord.MessageEmbed()
+                      .setColor(client.settings.bot.embedColor)
+                      .setTitle('Scouted Tile')
+                      .setFooter(message.author.tag)
+                      .setTimestamp()
+                    let baseDescription = `Tile: X: \`${mapEntry.xPos}\`, Y: \`${mapEntry.yPos}\`\n\n`
+                    if (mapEntry.city != null) {
+                      baseDescription += `You found a level \`${mapEntry.city.level}\` city!`
+                      if (mapEntry.city.owner) {
+                        const owner = await client.database.collection('users').findOne({ uid: mapEntry.city.owner })
+                        const ownerUser = client.users.get(mapEntry.city.owner)
+                        if (owner.flagURL != null) embed.setThumbnail(owner.flagURL)
+                        embed.addField('Owner', `\`${ownerUser.username}\``, true)
+                        if (owner.empireName != null) embed.addField('Empire Name', `\`${owner.empireName}\``, true)
+                      } else {
+                        embed.addField('Owner', '`NPC`', true)
+                      }
+                      if (mapEntry.city.name) embed.addField('City Name', `\`${mapEntry.city.name}\``, true)
+                      embed.addField('Total Resources', `\`${
                       (
                           mapEntry.city.resources.stone +
                           mapEntry.city.resources.metal +
@@ -81,26 +80,25 @@ module.exports.load = client => {
                       ) // uber i hate you please fix resources you stupid weeb
                         .toLocaleString()
                     }\` combined resources.`, true
-                          )
-                          embed.addField('Total Population', `\`${
+                      )
+                      embed.addField('Total Population', `\`${
                       (
                         Object.values(mapEntry.city.population)
                           .reduce((a, b) => a + b, 0)
                       )
                         .toLocaleString()
                     }\` people.`, true
-                          )
-                          embed.addField('In Stasis', '`' + (mapEntry.city.inStasis ? 'Yes' : 'No') + '`', true)
-                        } else {
-                          baseDescription += 'Nothing was found!'
-                        }
-                        if (mapEntry.hasWonder) baseDescription += '\nTile has a wonder!'
-                        else baseDescription += '\nTile has no wonder.'
-                        embed.setDescription(baseDescription)
+                      )
+                      embed.addField('In Stasis', '`' + (mapEntry.city.inStasis ? 'Yes' : 'No') + '`', true)
+                    } else {
+                      baseDescription += 'Nothing was found!'
+                    }
+                    if (mapEntry.hasWonder) baseDescription += '\nTile has a wonder!'
+                    else baseDescription += '\nTile has no wonder.'
+                    embed.setDescription(baseDescription)
 
-                        msg.edit(embed)
-                      }, time || 0)
-                    })
+                    msg.edit(embed)
+                  }, time || 0)
                 })
                 .catch(e => client.sendError(message, e))
             }
