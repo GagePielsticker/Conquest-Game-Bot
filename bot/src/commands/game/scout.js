@@ -8,7 +8,7 @@ module.exports.load = client => {
     description: 'Scouts the tile you\'re currently on.',
     usage: `${client.settings.bot.prefix}scout`,
     requiredPermission: null,
-    hasAccountCheck: false,
+    hasAccountCheck: true,
 
     async run (message) {
       const cooldown = client.game.scoutCooldown.get(message.author.id)
