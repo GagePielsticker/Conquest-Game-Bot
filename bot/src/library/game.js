@@ -476,9 +476,9 @@ module.exports = client => {
       // push tile to array and write to database
       let time
       if(userEntry.scoutedTiles.some(x => x.xPos === userEntry.xPos && x.yPos === userEntry.yPos)) {
-        time = 1
+        time = null
       } else {
-        time = await client.gane.calculateScoutTime(userEntry.xPos, userEntry.yPos)
+        time = await client.game.calculateScoutTime(userEntry.xPos, userEntry.yPos)
         await userEntry.scoutedTiles.push({ xPos: userEntry.xPos, yPos: userEntry.yPos })
         setTimeout(() => {
           // move user in database
