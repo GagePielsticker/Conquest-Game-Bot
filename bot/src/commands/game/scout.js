@@ -61,15 +61,14 @@ module.exports.load = client => {
                         let baseDescription = `Tile: X: ${mapEntry.xPos}, Y: ${mapEntry.yPos}\n\n`
                         if (mapEntry.city != null) {
                           baseDescription += `You found a level ${mapEntry.city.level} city!`
-                          embed.addField('')
                           if (mapEntry.city.owner) {
                             const owner = await client.database.collection('users').findOne({ uid: mapEntry.city.owner })
                             const ownerUser = client.users.get(mapEntry.city.owner)
                             if (owner.flagURL != null) embed.setThumbnail(owner.flagURL)
-                            embed.addField('Owner', ownerUser.username)
-                            embed.addField('Empire Name', owner.empireName)
+                            embed.addField('Owner', ownerUser.username, true)
+                            if (owner.empireName != null) embed.addField('Empire Name', owner.empireName, true)
                           } else {
-                            embed.addField('Owner', 'NPC')
+                            embed.addField('Owner', 'NPC', true)
                           }
                           embed.addField('Total Resources', `${
                       (
@@ -79,17 +78,17 @@ module.exports.load = client => {
                           mapEntry.city.resources.food
                       ) // uber i hate you please fix resources you stupid weeb
                         .toLocaleString()
-                    } combined resources.`
+                    } combined resources.`, true
                           )
                           embed.addField('Total Population', `${
                       (
-                        mapEntry.city.population
+                        Object.values(mapEntry.city.population)
                           .reduce((a, b) => a + b, 0)
                       )
                         .toLocaleString()
-                    } people.`
+                    } people.`, true
                           )
-                          embed.addField('In Stasis', mapEntry.city.inStasis ? 'Yes' : 'No')
+                          embed.addField('In Stasis', mapEntry.city.inStasis ? 'Yes' : 'No', true)
                         } else {
                           baseDescription += 'Nothing was found!'
                         }
