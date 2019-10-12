@@ -474,7 +474,7 @@ module.exports = client => {
       if (client.game.scoutCooldown.has(uid)) return Promise.reject('User is currently scouting a tile.')
 
       // push tile to array and write to database
-      const time
+      let time
       if(userEntry.scoutedTiles.some(x => x.xPos === userEntry.xPos && x.yPos === userEntry.yPos)) {
         time = 1
       } else {
