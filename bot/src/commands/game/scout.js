@@ -41,7 +41,8 @@ module.exports.load = client => {
             yes: () => {
               client.game.scoutTile(message.author.id)
                 .then(response => {
-                  const { time, mapEntry } = response
+                  let { time, mapEntry } = response
+                  if (message.content.match(/-d/) && client.beta) time = 1000
                   confirmMsg.edit(
                     new client.discord.MessageEmbed()
                       .setColor(client.settings.bot.embedColor)

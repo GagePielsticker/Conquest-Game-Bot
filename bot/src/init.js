@@ -18,8 +18,10 @@ require('./library/cronJobs.js')(client)
 if (process.argv.includes('-d')) {
   client.settings.bot.token = client.settings.bot.betaToken
   client.settings.bot.prefix = client.settings.bot.betaPrefix
+  client.beta = true
 } else {
   require('./library/dbl.js')(client)
+  client.beta = false
 }
 
 // Initialize bot
