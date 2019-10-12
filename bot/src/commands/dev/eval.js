@@ -18,6 +18,7 @@ module.exports.load = client => {
       try {
         const code = message.content.split(' ').splice(1).join(' ')
         let evaled = eval(code)
+        if (evaled.then) evaled = await evaled
         if (typeof evaled !== 'string') { evaled = require('util').inspect(evaled) }
         message.channel.send(clean(evaled), { code: 'xl' })
       } catch (err) {
