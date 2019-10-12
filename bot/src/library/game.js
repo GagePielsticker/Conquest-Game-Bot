@@ -642,9 +642,10 @@ module.exports = client => {
 
     /**
      * Gets user cities based on page number
+     * @param {String} uid
      * @param {Integer} pageNumber
      */
-    getUserCityNames: async (pageNumber) => {
+    getUserCityNames: async (uid, pageNumber) => {
       // check if user exist
       const userEntry = await client.database.collection('users').findOne({ uid: uid })
       if (userEntry == null) return Promise.reject('User does not exist in database.')
