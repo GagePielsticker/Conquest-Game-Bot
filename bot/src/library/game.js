@@ -653,7 +653,9 @@ module.exports = client => {
       //loop through and grab entries
       let outputArray = []
       for(let i = 5 * pageNumber - 5; i <= 5 * pageNumber; i++) {
-        outputArray.push(userEntry.cities[i].name)
+        if(userEntry.cities > 0) {
+          outputArray.push(userEntry.cities[i].name)
+        }
       }
 
       //resolve
