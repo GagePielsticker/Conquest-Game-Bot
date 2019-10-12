@@ -638,6 +638,25 @@ module.exports = client => {
 
       // resolve once complete
       return Promise.resolve()
+    },
+
+    /**
+     * Gets user cities based on page number
+     * @param {Integer} pageNumber
+     */
+    getUserCityNames: async (pageNumber) => {
+      // check if user exist
+      const userEntry = await client.database.collection('users').findOne({ uid: uid })
+      if (userEntry == null) return Promise.reject('User does not exist in database.')
+
+      //loop through and grab entries
+      let outputArray = []
+      for(let i = 5 * pageNumber - 5; i <= 5 * pageNumber; i++) {
+        outputArray.push(userEntry.cities[i].name)
+      }
+
+      //resolve
+      return Promise.resolve(outputArray)
     }
   }
 }
