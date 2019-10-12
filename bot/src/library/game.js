@@ -451,12 +451,11 @@ module.exports = client => {
       const mapEntry = await client.database.collection('map').findOne({ xPos: xPos, yPos: yPos })
       if (mapEntry == null) return Promise.reject('Map tile does not exist in database.')
 
-      //do calculation
-      let time = 60000
+      // do calculation
+      const time = 60000
 
       return Promise.resolve(time)
     },
-
 
     /**
      * Scouts the tile the user is currently on
@@ -650,13 +649,9 @@ module.exports = client => {
       const userEntry = await client.database.collection('users').findOne({ uid: uid })
       if (userEntry == null) return Promise.reject('User does not exist in database.')
 
-      //loop through and grab entries
-      let outputArray = []
-      for(let i = 5 * pageNumber - 5; i <= 5 * pageNumber; i++) {
-        if(userEntry.cities > 0) {
-          outputArray.push(userEntry.cities[i].name)
-        }
-      }
+      // loop through and grab entries
+      const outputArray = userEntry.cities.map(x => x.name)
+        .slice((pageNumber - 1) * 5, pageNumber * 5)
 
       //resolve
       return Promise.resolve(outputArray)
