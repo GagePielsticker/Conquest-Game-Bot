@@ -474,10 +474,18 @@ module.exports = client => {
       if (client.game.scoutCooldown.has(uid)) return Promise.reject('User is currently scouting a tile.')
 
       // push tile to array and write to database
-      await userEntry.scoutedTiles.push({ xPos: userEntry.xPos, yPos: userEntry.ypos })
+      const time
+      if(userEntry.scoutedTiles.some(x => x.xPos === userEntry.xPos && x.yPos === userEntry.yPos)) {
+        time = 1
+      } else {
+        time = await client.gane.calculateScoutTime(userEntry.xPos, userEntry.yPos)
+        await userEntry.scoutedTiles.push({ xPos: userEntry.xPos, yPos: userEntry.yPos })
+        setTimeout(() => {
+          // move user in database
+          client.database.collection('users').updateOne({ uid: uid }, { $set: { scoutedTiles: userEntry.scoutedTiles } })
+        }, time)
+      }
 
-      // scan time calculation
-      const time = await client.game.calculateScoutTime(userEntry.xPos, userEntry.yPos)
 
       // add user to cooldown array and setup task
       client.game.scoutCooldown.set(uid, {
@@ -488,9 +496,6 @@ module.exports = client => {
       setTimeout(() => {
         // remove user from cooldown array
         client.game.scoutCooldown.delete(uid)
-
-        // move user in database
-        client.database.collection('users').updateOne({ uid: uid }, { $set: { scoutedTiles: userEntry.scoutedTiles } })
       }, time)
 
       // resolve cooldown time and map entry
