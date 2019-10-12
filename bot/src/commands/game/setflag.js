@@ -22,7 +22,7 @@ module.exports.load = client => {
     hasAccountCheck: true,
 
     async run (message) {
-      const flag = message.content.split(' ').splice(1).join(' ')
+      const flag = message.content.split(' ').splice(1).join(' ') || (message.attachments.first() || {}).url
       if (!flag) return client.sendError(message, `Missing Flag Image URL, do ${client.settings.bot.prefix}setflag {flag url}`)
       if (!validURL(flag)) return client.sendError(message, 'Malformed URL')
       const split = flag.split('.')
