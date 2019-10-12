@@ -36,7 +36,7 @@ module.exports.load = client => {
           return a
         }, [])
         .forEach(category => {
-          embed.addField((category.charAt(0).toUpperCase() + category.slice(1)), // make 1st character uppercase
+          embed.addField(category.charAt(0).toUpperCase() + category.slice(1), // make 1st character uppercase
             '```' + '\n' +
                     client.commands.filter(x => x.category === category).map(x => x.name.toLowerCase()).join('\n') + '\n' +
                     '```'

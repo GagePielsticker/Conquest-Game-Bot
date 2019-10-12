@@ -191,11 +191,7 @@ module.exports = client => {
       if (!userEntry.hasSettler) return Promise.reject('User does not have available settler.')
 
       // check to make sure user doesnt already have a place named that
-      let a = false
-      userEntry.cities.forEach(city => {
-        if (city.name.toLowerCase() == name.toLowerCase()) a = true
-      })
-      if (a) return Promise.reject('User has a city named this already.')
+      if (userEntry.cities.some(x => x.name === name)) return Promise.reject('User has a city named this already.')
 
       const cityObject = {
         level: 1,
@@ -344,7 +340,7 @@ module.exports = client => {
       if (mapEntry.city == null) return Promise.reject('City does not exist on tile.')
 
       // check if user own city
-      if (mapEntry.city.owner != uid) return Promise.reject('User does not own city.')
+      if (mapEntry.city.owner !== uid) return Promise.reject('User does not own city.')
 
       // get cost
       const cost = await client.game.calculateLevelCost(mapEntry.city.level)
@@ -354,7 +350,7 @@ module.exports = client => {
 
       // find city in users array and update level
       userEntry.cities.forEach(city => {
-        if (city.xPos == xPos && city.yPos == yPos) {
+        if (city.xPos === xPos && city.yPos === yPos) {
           city.level++
           city.resources.maxStone = city.level * 1.5 * 1000
           city.resources.maxMetal += city.level * 1.5 * 1000
@@ -407,7 +403,7 @@ module.exports = client => {
       if (mapEntry.city == null) return Promise.reject('City does not exist on tile.')
 
       // check if user owns city
-      if (mapEntry.city.owner != uid) return Promise.reject('User does not own city.')
+      if (mapEntry.city.owner !== uid) return Promise.reject('User does not own city.')
 
       // uniformize job names
       origin = origin.toLowerCase()
@@ -425,7 +421,7 @@ module.exports = client => {
 
       // do calculations for both map entry and user entry
       userEntry.cities.forEach(city => {
-        if (city.xPos == xPos && city.yPos == yPos) {
+        if (city.xPos === xPos && city.yPos === yPos) {
           city.population[origin] -= amount
           city.population[target] += amount
         }
@@ -447,13 +443,12 @@ module.exports = client => {
      * @param {Integer} yPos a position on map
      */
     calculateScoutTime: async (uid) => {
-      
       // check if user exist
       const userEntry = await client.database.collection('users').findOne({ uid: uid })
       if (userEntry == null) return Promise.reject('User does not exist in database.')
 
       let time
-      if(userEntry.scoutedTiles.some(x => x.xPos === userEntry.xPos && x.yPos === userEntry.yPos)) {
+      if (userEntry.scoutedTiles.some(x => x.xPos === userEntry.xPos && x.yPos === userEntry.yPos)) {
         time = null
       } else {
         time = 60000
@@ -480,7 +475,7 @@ module.exports = client => {
 
       // push tile to array and write to database
       let time
-      if(userEntry.scoutedTiles.some(x => x.xPos === userEntry.xPos && x.yPos === userEntry.yPos)) {
+      if (userEntry.scoutedTiles.some(x => x.xPos === userEntry.xPos && x.yPos === userEntry.yPos)) {
         time = null
       } else {
         time = await client.game.calculateScoutTime(uid)
@@ -490,7 +485,6 @@ module.exports = client => {
           client.database.collection('users').updateOne({ uid: uid }, { $set: { scoutedTiles: userEntry.scoutedTiles } })
         }, time)
       }
-
 
       // add user to cooldown array and setup task
       client.game.scoutCooldown.set(uid, {
@@ -672,6 +666,15 @@ module.exports = client => {
 
       // resolve
       return Promise.resolve({ cities: outputArray, totalPages: userEntry.cities.length })
+    },
+
+    /**
+     * Gets the city by the name
+     * @param {String} uid
+     * @param {String} name
+     */
+    getCityByName: async (uid, name) => {
+      return client.database.collection('map').findOne({ 'city.name': name, 'city.owner': uid })
     }
   }
 }
