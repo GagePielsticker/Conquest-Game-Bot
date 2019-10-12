@@ -66,11 +66,12 @@ module.exports.load = client => {
                             const owner = await client.database.collection('users').findOne({ uid: mapEntry.city.owner })
                             const ownerUser = client.users.get(mapEntry.city.owner)
                             if (owner.flagURL != null) embed.setThumbnail(owner.flagURL)
-                            embed.addField('Owner', ownerUser.username, true)
-                            if (owner.empireName != null) embed.addField('Empire Name', owner.empireName, true)
+                            embed.addField('Owner', `\`${ownerUser.username}\``, true)
+                            if (owner.empireName != null) embed.addField('Empire Name', `\`${owner.empireName}\``, true)
                           } else {
-                            embed.addField('Owner', 'NPC', true)
+                            embed.addField('Owner', '`NPC`', true)
                           }
+                          if (mapEntry.city.name) embed.addField('City Name', `\`${mapEntry.city.name}\``, true)
                           embed.addField('Total Resources', `\`${
                       (
                           mapEntry.city.resources.stone +
