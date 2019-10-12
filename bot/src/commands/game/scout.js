@@ -19,7 +19,7 @@ module.exports.load = client => {
         new client.discord.MessageEmbed()
           .setColor(client.settings.bot.embedColor)
           .setTitle('Confirm Scout')
-          .setDescription(`Tile: X: ${execUser.xPos}, Y: ${execUser.yPos}`)
+          .setDescription(`Tile: X: \`${execUser.xPos}\`, Y: \`${execUser.yPos}\``)
           .addField('Will take', `${humanizeDuration(travelTime)}`)
           .setFooter(message.author.tag)
           .setTimestamp()
@@ -46,7 +46,7 @@ module.exports.load = client => {
                     new client.discord.MessageEmbed()
                       .setColor(client.settings.bot.embedColor)
                       .setTitle('Scouting Tile')
-                      .setDescription(`Tile: X: ${mapEntry.xPos}, Y: ${mapEntry.yPos}\n\nThis message will be changed when time is over!`)
+                      .setDescription(`Tile: X: \`${mapEntry.xPos}\`, Y: \`${mapEntry.yPos}\`\n\nThis message will be changed when time is over!`)
                       .addField('Will be done scouting in', `${humanizeDuration(time)}`)
                       .setFooter(message.author.tag)
                       .setTimestamp()
@@ -58,9 +58,9 @@ module.exports.load = client => {
                           .setTitle('Scouted Tile')
                           .setFooter(message.author.tag)
                           .setTimestamp()
-                        let baseDescription = `Tile: X: ${mapEntry.xPos}, Y: ${mapEntry.yPos}\n\n`
+                        let baseDescription = `Tile: X: \`${mapEntry.xPos}\`, Y: \`${mapEntry.yPos}\`\n\n`
                         if (mapEntry.city != null) {
-                          baseDescription += `You found a level ${mapEntry.city.level} city!`
+                          baseDescription += `You found a level \`${mapEntry.city.level}\` city!`
                           if (mapEntry.city.owner) {
                             const owner = await client.database.collection('users').findOne({ uid: mapEntry.city.owner })
                             const ownerUser = client.users.get(mapEntry.city.owner)
@@ -70,7 +70,7 @@ module.exports.load = client => {
                           } else {
                             embed.addField('Owner', 'NPC', true)
                           }
-                          embed.addField('Total Resources', `${
+                          embed.addField('Total Resources', `\`${
                       (
                           mapEntry.city.resources.stone +
                           mapEntry.city.resources.metal +
@@ -78,17 +78,17 @@ module.exports.load = client => {
                           mapEntry.city.resources.food
                       ) // uber i hate you please fix resources you stupid weeb
                         .toLocaleString()
-                    } combined resources.`, true
+                    }\` combined resources.`, true
                           )
-                          embed.addField('Total Population', `${
+                          embed.addField('Total Population', `\`${
                       (
                         Object.values(mapEntry.city.population)
                           .reduce((a, b) => a + b, 0)
                       )
                         .toLocaleString()
-                    } people.`, true
+                    }\` people.`, true
                           )
-                          embed.addField('In Stasis', mapEntry.city.inStasis ? 'Yes' : 'No', true)
+                          embed.addField('In Stasis', '`' + (mapEntry.city.inStasis ? 'Yes' : 'No') + '`', true)
                         } else {
                           baseDescription += 'Nothing was found!'
                         }
