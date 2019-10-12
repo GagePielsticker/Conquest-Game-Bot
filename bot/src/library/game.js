@@ -650,7 +650,14 @@ module.exports = client => {
       if (userEntry == null) return Promise.reject('User does not exist in database.')
 
       // loop through and grab entries
-      const outputArray = userEntry.cities.map(x => x.name)
+      let i = 0
+      const outputArray = userEntry.cities.map(x => {
+        i++
+        return {
+          index: i,
+          name: x.name
+        }
+      })
         .slice((pageNumber - 1) * 5, pageNumber * 5)
 
       //resolve
