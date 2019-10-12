@@ -165,7 +165,7 @@ module.exports = client => {
       const distance = Math.sqrt(a * a + b * b)
 
       // calculate time from distance
-      const time = distance * 4
+      const time = distance * 10
 
       // return time in milleseconds
       return Promise.resolve(Math.floor(time * 1000))
