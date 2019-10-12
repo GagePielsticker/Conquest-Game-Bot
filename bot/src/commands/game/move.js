@@ -41,7 +41,7 @@ module.exports.load = client => {
             no: () => {
               msg.edit(
                 new client.discord.MessageEmbed()
-                  .setColor('RED')
+                  .setColor(client.settings.bot.embedColor)
                   .setTitle('Cancelled Movement')
                   .setFooter(message.author.tag)
                   .setTimestamp()
