@@ -660,8 +660,8 @@ module.exports = client => {
       })
         .slice((pageNumber - 1) * 5, pageNumber * 5)
 
-      //resolve
-      return Promise.resolve(outputArray)
+      // resolve
+      return Promise.resolve({ cities: outputArray, totalPages: userEntry.cities.length })
     }
   }
 }
