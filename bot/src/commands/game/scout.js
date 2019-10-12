@@ -94,8 +94,8 @@ module.exports.load = client => {
                         } else {
                           baseDescription += 'Nothing was found!'
                         }
-                        if (mapEntry.hasWounder) baseDescription += '\nTile has a wounder!'
-                        else baseDescription += '\nTile has no wounder.'
+                        if (mapEntry.hasWonder) baseDescription += '\nTile has a wonder!'
+                        else baseDescription += '\nTile has no wonder.'
                         embed.setDescription(baseDescription)
 
                         msg.edit(embed)
