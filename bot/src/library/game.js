@@ -446,13 +446,18 @@ module.exports = client => {
      * @param {Integer} xPos a position on map
      * @param {Integer} yPos a position on map
      */
-    calculateScoutTime: async (xPos, yPos) => {
-      // check if tile exist
-      const mapEntry = await client.database.collection('map').findOne({ xPos: xPos, yPos: yPos })
-      if (mapEntry == null) return Promise.reject('Map tile does not exist in database.')
+    calculateScoutTime: async (uid) => {
+      
+      // check if user exist
+      const userEntry = await client.database.collection('users').findOne({ uid: uid })
+      if (userEntry == null) return Promise.reject('User does not exist in database.')
 
-      // do calculation
-      const time = 60000
+      let time
+      if(userEntry.scoutedTiles.some(x => x.xPos === userEntry.xPos && x.yPos === userEntry.yPos)) {
+        time = null
+      } else {
+        time = 60000
+      }
 
       return Promise.resolve(time)
     },
@@ -478,7 +483,7 @@ module.exports = client => {
       if(userEntry.scoutedTiles.some(x => x.xPos === userEntry.xPos && x.yPos === userEntry.yPos)) {
         time = null
       } else {
-        time = await client.game.calculateScoutTime(userEntry.xPos, userEntry.yPos)
+        time = await client.game.calculateScoutTime(uid)
         await userEntry.scoutedTiles.push({ xPos: userEntry.xPos, yPos: userEntry.yPos })
         setTimeout(() => {
           // move user in database
