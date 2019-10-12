@@ -1,8 +1,9 @@
 {
     "auth" : {
-        "clientID" : "a",
-        "clientSecret" : "a",
-        "callbackURL" : "a",
+        "clientID" : "595817865492430848",
+        "clientSecret" : "ruDpRlnMz54O_Ag47rU-GiVQvnpx806n",
+        "devCallbackURL" : "http://localhost/auth/callback",
+        "callbackURL" : "https://conquestsim.io/auth/callback",
         "scope" : ["identify"],
         "sessionSecret" : "Th1sizN0t4u2c."
     }

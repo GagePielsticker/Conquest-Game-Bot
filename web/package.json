@@ -1,8 +1,9 @@
 {
-  "name": "conquest-map",
+  "name": "conquest-web",
   "version": "1.0.0",
   "scripts": {
-    "start": "node ./src/bin/www"
+    "prod": "node ./src/bin/www",
+    "dev": "node ./src/bin/www -d"
   },
   "dependencies": {
     "cookie-parser": "~1.4.4",

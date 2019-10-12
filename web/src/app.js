@@ -10,6 +10,11 @@ const passport = require('passport')
 const DiscordStrategy = require('passport-discord').Strategy
 const authSettings = require('./settings/settings.json')
 
+// checks if dev mode is set to true
+if (process.argv.includes('-d')) {
+  authSettings.callbackURL = authSettings.devCallbackURL
+} 
+
 // passport setup
 passport.use(new DiscordStrategy({
   clientID: authSettings.auth.clientID,
