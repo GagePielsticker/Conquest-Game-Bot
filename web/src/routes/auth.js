@@ -5,8 +5,10 @@ const passport = require('passport')
 /**
  * Handles initiating authentication
  */
-router.get('/discord', passport.authenticate('discord'))
-
+//router.get('/discord', passport.authenticate('discord'))
+router.get('/discord', (req, res) => {
+  res.send('Under maintnance.')
+})
 /**
  * Catches discords callback
  */
