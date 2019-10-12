@@ -31,7 +31,7 @@ module.exports.load = client => {
         .then(() => {
           message.channel.send(
             new client.discord.MessageEmbed()
-              .setColor('GREEN')
+              .setColor(client.settings.bot.embedColor)
               .setTitle('Flag Image Set!')
               .setThumbnail(flag)
               .setFooter(message.author.tag)

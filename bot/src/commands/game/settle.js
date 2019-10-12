@@ -25,7 +25,7 @@ module.exports.load = client => {
             no: () => {
               confirmMsg.edit(
                 new client.discord.MessageEmbed()
-                  .setColor('RED')
+                  .setColor(client.settings.bot.embedColor)
                   .setTitle('Cancelled settle')
                   .setFooter(message.author.tag)
                   .setTimestamp()
@@ -39,7 +39,7 @@ module.exports.load = client => {
                 .then(() => {
                   confirmMsg.edit(
                     new client.discord.MessageEmbed()
-                      .setColor('GREEN')
+                      .setColor(client.settings.bot.embedColor)
                       .setTitle(`Settled tile! Welcome ${name} to the world!`)
                       .setDescription(`You've successfully claimed tile: X: \`${user.xPos}\`, Y: \`${user.yPos}\``)
                       .setFooter(message.author.tag)

@@ -29,7 +29,7 @@ module.exports.load = client => {
             no: () => {
               confirmMsg.edit(
                 new client.discord.MessageEmbed()
-                  .setColor('RED')
+                  .setColor(client.settings.bot.embedColor)
                   .setTitle('Cancelled Scout')
                   .setFooter(message.author.tag)
                   .setTimestamp()
