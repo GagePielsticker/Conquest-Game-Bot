@@ -18,6 +18,7 @@ const multer = require('multer')
 const mtr = multer()
 
 router.post('/upload', mtr.any(), async (req, res) => {
+    if(req.body.key != 'nutt1y') return res.status(404).json({ error: 'Not Found nErd.' })
   const tCheck = req.files[0].originalname.split('.')[1]
   if (tCheck != 'png' && tCheck != 'gif' && tCheck != 'jpg' && tCheck != 'jpeg' && tCheck != 'webp') { return res.status(500).json({ error: 'Not a valid image format (png/gif/jpg/jpeg/webp)' }) }
   const type = tCheck || 'png'
