@@ -9,8 +9,9 @@ module.exports = client => {
      */
   client.connectDb = () => {
     return new Promise((resolve, reject) => {
-      MongoClient.connect(client.settings.database.mongodbURL, { useNewUrlParser: true }, async (err, data) => {
-        client.database = await data.db(client.settings.database.databaseName)
+      const { host, port, database, username, password } = client.settings.database
+      MongoClient.connect(`mongodb://${username ? `${username}:${password}@` : ''}${host}:${port}`, { useNewUrlParser: true }, async (err, data) => {
+        client.database = await data.db(database)
         if (err) return reject(`Error connecting to db: ${err}`)
         else resolve()
       })

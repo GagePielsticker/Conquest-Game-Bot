@@ -27,8 +27,11 @@
     },
 
     "database" : {
-        "mongodbURL" : "mongodb://localhost:27017",
-        "databaseName" : "conquest"
+        "host" : "localhost",
+        "port": "27017",
+        "database" : "conquest",
+        "username": null,
+        "password": null
     },
 
     "dbl" : {
