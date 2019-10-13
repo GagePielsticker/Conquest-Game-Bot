@@ -40,7 +40,7 @@ module.exports = client => {
         if (command.name.toLowerCase() === message.content.split(' ')[0].toLowerCase().replace(client.settings.bot.prefix, '')) {
           // if there is a required account check
           if (command.hasAccountCheck) {
-            const entry = client.database.collection('users').findOne({ uid: message.author.id })
+            const entry = await client.database.collection('users').findOne({ uid: message.author.id })
             if (entry == null) return reject('User does not have a game account created.')
           }
           // check if user has designated role for command
@@ -115,5 +115,42 @@ module.exports = client => {
     const emoji = reaction.emoji
     if (emoji.id !== client.emoji.yes.id) return fn.no()
     return fn.yes()
+  }
+
+  client.reactMenu = async (message, invoke, stuff) => {
+    const emojis = stuff.map(x => x.emoji.id || x.emoji)
+
+    emojis.forEach(x => invoke.react(x))
+    const react = await invoke.awaitReactions(
+      (reaction, user) => user.equals(message.author) && (emojis.includes(reaction._emoji.id) || emojis.includes(reaction._emoji.name)),
+      {
+        max: 1,
+        time: 30000
+      }
+    )
+    invoke.reactions.removeAll()
+    const reaction = react.first()
+    if (!reaction) client.sendError(message, 'Ran out of time', invoke)
+    const emoji = reaction.emoji
+    const response = stuff.find(x => [emoji.id, emoji.name].includes(x.emoji) || [emoji.id, emoji.name].includes(x.emoji.id))
+    if (!response) return client.sendError(message, 'Invalid response', invoke)
+    response.fn()
+  }
+
+  client.messageMenu = async (message, invoke) => {
+    const response = await message.channel.awaitMessages(
+      (m) => m.author.equals(message.author),
+      {
+        max: 1,
+        time: 30000
+      }
+    )
+    const msg = response.first()
+    if (!msg) {
+      client.sendError(message, 'Ran out of time', invoke)
+      return false
+    }
+    msg.delete()
+    return msg.content
   }
 }
