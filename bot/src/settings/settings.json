@@ -30,8 +30,8 @@
         "host" : "localhost",
         "port": "27017",
         "database" : "conquest",
-        "username": null,
-        "password": null
+        "username": "",
+        "password": ""
     },
 
     "dbl" : {
