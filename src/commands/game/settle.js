@@ -16,23 +16,17 @@ module.exports = class SettleCommand extends Command {
     if (!name) return this.c.sendError(message, `Name is required, \`${this.c.settings.bot.prefix}settle {name}\``)
     const user = await this.c.database.collection('users').findOne({ uid: message.author.id })
     message.channel.send(
-      new this.c.discord.MessageEmbed()
-        .setColor(this.c.settings.bot.embedColor)
+      this.c.em(message)
         .setTitle('Confirm settle')
         .setDescription(`Settle Tile: X: \`${user.xPos}\`, Y: \`${user.yPos}\``)
         .addField('Name', name)
-        .setFooter(message.author.tag)
-        .setTimestamp()
     )
       .then(confirmMsg => {
         this.c.confirm(message, confirmMsg, {
           no: () => {
             confirmMsg.edit(
-              new this.c.discord.MessageEmbed()
-                .setColor(this.c.settings.bot.embedColor)
+              this.c.em()
                 .setTitle('Cancelled settle')
-                .setFooter(message.author.tag)
-                .setTimestamp()
             )
           },
           notime: () => {
@@ -42,12 +36,9 @@ module.exports = class SettleCommand extends Command {
             this.c.game.settleLocation(message.author.id, name)
               .then(() => {
                 confirmMsg.edit(
-                  new this.c.discord.MessageEmbed()
-                    .setColor(this.c.settings.bot.embedColor)
+                  this.c.em(message)
                     .setTitle(`Settled tile! Welcome ${name} to the world!`)
                     .setDescription(`You've successfully claimed tile: X: \`${user.xPos}\`, Y: \`${user.yPos}\``)
-                    .setFooter(message.author.tag)
-                    .setTimestamp()
                 )
               })
               .catch(e => this.c.sendError(message, e, confirmMsg))

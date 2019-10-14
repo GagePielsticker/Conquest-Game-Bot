@@ -13,14 +13,11 @@ module.exports = class AccountCommand extends Command {
 
   async run (message, args) {
     const entry = await this.c.database.collection('users').findOne({ uid: message.author.id })
-    const embed = new this.c.discord.MessageEmbed()
-      .setColor(this.c.settings.bot.embedColor)
+    const embed = this.c.em(message)
       .setTitle(':spy: Account')
       .setDescription('Here you can view your user data.')
-      .setFooter(message.author.tag)
-      .setTimestamp()
-    embed.addField(':map: Position', `x:\`${entry.xPos}\` y:\`${entry.yPos}\``, true)
-    embed.addField(':moneybag: Gold', `\`${entry.gold.toLocaleString()}\` gold`, true)
+      .addField(':map: Position', `x:\`${entry.xPos}\` y:\`${entry.yPos}\``, true)
+      .addField(':moneybag: Gold', `\`${entry.gold.toLocaleString()}\` gold`, true)
     if (entry.empireName != null) embed.addField(':european_castle: Empire', `\`${entry.empireName}\``, true)
     else embed.addField(':european_castle: Empire', '`Unnamed`', true)
     if (entry.flagURL != null) embed.setThumbnail(entry.flagURL)

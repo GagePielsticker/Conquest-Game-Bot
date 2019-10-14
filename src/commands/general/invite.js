@@ -13,7 +13,7 @@ module.exports = class InviteCommand extends Command {
 
   async run (message, args) {
     message.channel.send(
-      new this.c.discord.MessageEmbed()
+      this.c.em(message)
         .setColor(this.c.settings.bot.embedColor)
         .setTitle(':mailbox_with_mail: Invite')
         .setDescription(`Invite the bot [here](${this.c.settings.bot.inviteURL})!`)

@@ -18,7 +18,7 @@ module.exports = class StatsCommand extends Command {
     const mem = await si.mem()
     const operating = await si.osInfo()
     message.channel.send(
-      new this.c.discord.MessageEmbed()
+      this.c.em(message)
         .setTitle(':bar_chart: Statistics')
         .setDescription(this.c.settings.bot.botDescription)
         .addField('Users', `\`${this.c.users.size}\``, true)
@@ -33,9 +33,6 @@ module.exports = class StatsCommand extends Command {
         .addField('Invite Link', `[Click Here](${this.c.settings.bot.inviteURL})`, true)
         .addField('Support Server', `[Click Here](${this.c.settings.bot.supportServer})`, true)
         .addField('Developer', '`uber#0001\nJPBBerry#0001`', true)
-        .setFooter(`${message.author.username}#${message.author.discriminator}`)
-        .setTimestamp()
-        .setColor(this.c.settings.bot.embedColor)
     )
   }
 }

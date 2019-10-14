@@ -30,7 +30,7 @@ module.exports = class MoveCommand extends Command {
     const timeToMove = await this.c.game.calculateTravelTime(user.xPos, user.yPos, newX, newY)
 
     message.channel.send(
-      new this.c.discord.MessageEmbed()
+      this.c.em(message)
         .setColor(this.c.settings.bot.embedColor)
         .setTitle('Confirm movement')
         .addField('From tile', `X: \`${user.xPos}\`, Y: \`${user.yPos}\``, true)
@@ -43,11 +43,8 @@ module.exports = class MoveCommand extends Command {
         this.c.confirm(message, msg, {
           no: () => {
             msg.edit(
-              new this.c.discord.MessageEmbed()
-                .setColor(this.c.settings.bot.embedColor)
+              this.c.em(message)
                 .setTitle('Cancelled Movement')
-                .setFooter(message.author.tag)
-                .setTimestamp()
             )
           },
           notime: () => {
@@ -58,22 +55,16 @@ module.exports = class MoveCommand extends Command {
               .then((time) => {
                 if (message.content.match(/-d/) && this.c.beta) time = 1000
                 msg.edit(
-                  new this.c.discord.MessageEmbed()
-                    .setColor(this.c.settings.bot.embedColor)
+                  this.c.em(message)
                     .setTitle('Moving!')
                     .setDescription(`Now moving to tile: X: \`${newX}\`, Y: \`${newY}\`\n\nYou will be pinged here when you have finished moving!`)
                     .addField('Will be done in', `\`${humanizeDuration(time)}\``)
-                    .setFooter(message.author.tag)
-                    .setTimestamp()
                 )
                 setTimeout(() => {
                   message.reply(
-                    new this.c.discord.MessageEmbed()
-                      .setColor(this.c.settings.bot.embedColor)
+                    this.c.em(message)
                       .setTitle('Moved!')
                       .setDescription(`Your new location is X: \`${newX}\` \`${newY}\``)
-                      .setFooter(message.author.tag)
-                      .setTimestamp()
                   )
                 }, time)
               })

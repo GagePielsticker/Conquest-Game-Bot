@@ -19,23 +19,18 @@ module.exports = class ScoutCommand extends Command {
     const execUser = await this.c.database.collection('users').findOne({ uid: message.author.id })
     const travelTime = await this.c.game.calculateScoutTime(message.author.id)
     message.channel.send(
-      new this.c.discord.MessageEmbed()
+      this.c.em(message)
         .setColor(this.c.settings.bot.embedColor)
         .setTitle('Confirm Scout')
         .setDescription(`Tile: X: \`${execUser.xPos}\`, Y: \`${execUser.yPos}\``)
         .addField('Will take', `\`${humanizeDuration(travelTime)}\``)
-        .setFooter(message.author.tag)
-        .setTimestamp()
     )
       .then(async confirmMsg => {
         this.c.confirm(message, confirmMsg, {
           no: () => {
             confirmMsg.edit(
-              new this.c.discord.MessageEmbed()
-                .setColor(this.c.settings.bot.embedColor)
+              this.c.em(message)
                 .setTitle('Cancelled Scout')
-                .setFooter(message.author.tag)
-                .setTimestamp()
             )
           },
           notime: () => {
@@ -47,20 +42,14 @@ module.exports = class ScoutCommand extends Command {
                 let { time, mapEntry } = response
                 if (message.content.match(/-d/) && this.c.beta) time = 1000
                 const msg = time != null ? await confirmMsg.edit(
-                  new this.c.discord.MessageEmbed()
-                    .setColor(this.c.settings.bot.embedColor)
+                  this.c.em(message)
                     .setTitle('Scouting Tile')
                     .setDescription(`Tile: X: \`${mapEntry.xPos}\`, Y: \`${mapEntry.yPos}\`\n\nThis message will be changed when time is over!`)
                     .addField('Will be done scouting in', `\`${humanizeDuration(time)}\``)
-                    .setFooter(message.author.tag)
-                    .setTimestamp()
                 ) : confirmMsg
                 setTimeout(async () => {
-                  const embed = new this.c.discord.MessageEmbed()
-                    .setColor(this.c.settings.bot.embedColor)
+                  const embed = this.c.em(message)
                     .setTitle('Scouted Tile')
-                    .setFooter(message.author.tag)
-                    .setTimestamp()
                   let baseDescription = `Tile: X: \`${mapEntry.xPos}\`, Y: \`${mapEntry.yPos}\`\n\n`
                   if (mapEntry.city != null) {
                     baseDescription += `You found a level \`${mapEntry.city.level}\` city!`

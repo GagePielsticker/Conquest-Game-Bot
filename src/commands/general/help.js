@@ -17,21 +17,15 @@ module.exports = class HelpCommand extends Command {
       const command = this.c.commands.find(x => x.name.toLowerCase() === cmd.toLowerCase() || x.aliases.includes(cmd.toLowerCase))
       if (!command || command.category === 'dev') return this.c.sendError(message, `Invalid command: \`${cmd}\``)
       return message.channel.send(
-        new this.c.discord.MessageEmbed()
-          .setColor(this.c.settings.bot.embedColor)
+        this.c.em(message)
           .setTitle(command.name)
           .addField('Description', `\`\`\`${command.description}\`\`\``)
           .addField('Usage', `\`\`\`${command.usage}\`\`\``)
-          .setFooter(message.author.tag)
-          .setTimestamp()
       )
     }
-    const embed = new this.c.discord.MessageEmbed()
-      .setColor(this.c.settings.bot.embedColor)
+    const embed = this.c.em(message)
       .setTitle('Help')
       .setDescription(`Use \`${this.c.settings.bot.prefix}help {command}\` to learn more about the command.`)
-      .setFooter(message.author.tag)
-      .setTimestamp()
 
     this.c.commands.map(x => x.category).filter(x => x !== 'dev') // remove dev
       .reduce((a, b) => { // remove dupes

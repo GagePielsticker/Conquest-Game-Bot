@@ -14,12 +14,9 @@ module.exports = class BalanceCommand extends Command {
   async run (message, args) {
     const entry = await this.c.database.collection('users').findOne({ uid: message.author.id })
     message.channel.send(
-      new this.c.discord.MessageEmbed()
-        .setColor(this.c.settings.bot.embedColor)
+      this.c.em(message)
         .setTitle(':moneybag: Balance')
         .setDescription(`\`${entry.gold.toLocaleString()}\` gold`)
-        .setFooter(message.author.tag)
-        .setTimestamp()
     )
   }
 }

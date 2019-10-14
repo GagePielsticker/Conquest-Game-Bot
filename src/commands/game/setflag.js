@@ -32,12 +32,9 @@ module.exports = class SetFlagCommand extends Command {
     this.c.game.setFlag(message.author.id, flag)
       .then(() => {
         message.channel.send(
-          new this.c.discord.MessageEmbed()
-            .setColor(this.c.settings.bot.embedColor)
+          this.c.em(message)
             .setTitle('Flag Image Set!')
             .setThumbnail(flag)
-            .setFooter(message.author.tag)
-            .setTimestamp()
         )
       })
       .catch(e => this.c.sendError(message, e))

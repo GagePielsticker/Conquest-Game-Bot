@@ -14,12 +14,9 @@ module.exports = class PositionCommand extends Command {
   async run (message, args) {
     const entry = await this.c.database.collection('users').findOne({ uid: message.author.id })
     message.channel.send(
-      new this.c.discord.MessageEmbed()
-        .setColor(this.c.settings.bot.embedColor)
+      this.c.em(message)
         .setTitle(':map: Position')
         .setDescription(`X:\`${entry.xPos}\` Y:\`${entry.yPos}\``)
-        .setFooter(message.author.tag)
-        .setTimestamp()
     )
   }
 }

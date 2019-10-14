@@ -55,24 +55,6 @@ module.exports = client => {
     cmd.run(message, args)
   }
 
-  // client.commands.forEach(async command => {
-  //   if (command.name.toLowerCase() === message.content.split(' ')[0].toLowerCase().replace(client.settings.bot.prefix, '')) {
-  //     // if there is a required account check
-  //     if (command.hasAccountCheck) {
-  //       const entry = await client.database.collection('users').findOne({ uid: message.author.id })
-  //       if (entry == null) return reject('User does not have a game account created.')
-  //     }
-  //     // check if user has designated role for command
-  //     if (command.requiredPermission != null) {
-  //       if (!message.member.permissions.has(command.requiredPermission)) return reject('User does not have permissions to use command.')
-  //     }
-
-  //     // runs command
-  //     command.run(message) // this line runs the command, put any checks above it and reject on errors
-  //     resolve()
-  //   }
-  // })
-
   /**
      * Creates an error discord embed and sends
      * @param {Object} message Discords message event fire
@@ -80,12 +62,9 @@ module.exports = client => {
      * @param {Object} edit Message to edit, if supplied will be editted rather than sent to channel.
      */
   client.sendError = (message, string, edit) => {
-    const embed = new client.discord.MessageEmbed()
+    const embed = this.c.em(message)
       .setTitle(':x: Error')
       .setDescription(`${string}`)
-      .setFooter(`${message.author.tag}`)
-      .setTimestamp()
-      .setColor(client.settings.bot.embedColor)
     if (edit) return edit.edit(embed)
     message.channel.send(embed)
   }
@@ -96,12 +75,9 @@ module.exports = client => {
      * @param {String} string
      */
   client.sendSuccess = (message, string) => {
-    const embed = new client.discord.MessageEmbed()
+    const embed = this.c.em(message)
       .setTitle(':white_check_mark: Success')
       .setDescription(`${string}`)
-      .setFooter(`${message.author.tag}`)
-      .setTimestamp()
-      .setColor(client.settings.bot.embedColor)
     message.channel.send(embed)
   }
 
@@ -169,5 +145,12 @@ module.exports = client => {
     }
     msg.delete()
     return msg.content
+  }
+
+  client.em = (msg) => {
+    return new client.discord.MessageEmbed()
+      .setColor(client.settings.bot.embedColor)
+      .setFooter(msg.author.tag)
+      .setTimestamp()
   }
 }

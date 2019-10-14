@@ -22,8 +22,7 @@ module.exports = class LeaderboardCommand extends Command {
         const { leaderboard, totalPages } = response
         if (page > totalPages) return this.c.sendError(message, `Invalid page, max pages: ${totalPages}`)
         message.channel.send(
-          new this.c.discord.MessageEmbed()
-            .setColor(this.c.settings.bot.embedColor)
+          this.c.em(message)
             .setTitle(`Leaderboard for ${subject}`)
             .setDescription(`You are viewing page \`${page}\` / \`${totalPages}\`` + '\n' +
                     '```' + '\n' +
@@ -33,8 +32,6 @@ module.exports = class LeaderboardCommand extends Command {
                     '```' + '\n\n' +
                     `${page + 1 > totalPages ? '' : `Do \`${this.c.settings.bot.prefix}leaderboard ${subject} ${page + 1}\` to view next page`}`
             )
-            .setFooter(message.author.tag)
-            .setTimestamp()
         )
       })
       .catch(e => this.c.sendError(message, e))
