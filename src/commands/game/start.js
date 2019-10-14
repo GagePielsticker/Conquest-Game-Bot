@@ -1,18 +1,19 @@
-module.exports.load = client => {
-  const command = {
-    name: 'Start',
-    category: 'game',
-    description: 'Create a user account for the game.',
-    usage: `${client.settings.bot.prefix}start`,
-    requiredPermission: null,
-    hasAccountCheck: false,
+const Command = require('../command.js')
 
-    async run (message) {
-      client.game.createUser(message.author.id)
-        .then(() => client.sendSuccess(message, 'You have successfully created an account!'))
-        .catch(e => client.sendError(message, e))
-    }
+module.exports = class StartCommand extends Command {
+  constructor (client) {
+    super('start', [], 'Create a user account for the game.', {
+      usage: `${client.settings.bot.prefix}start`,
+      accountCheck: false,
+      requiredPermission: null,
+      category: 'game'
+    })
+    this.c = client
   }
 
-  client.commands.push(command)
+  async run (message, args) {
+    this.c.game.createUser(message.author.id)
+      .then(() => this.c.sendSuccess(message, 'You have successfully created an account!'))
+      .catch(e => this.c.sendError(message, e))
+  }
 }
