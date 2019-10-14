@@ -670,15 +670,14 @@ module.exports = client => {
 
     getLeaderboard: async (by, pageNumber) => {
       const tempList = []
-      let sortedList
 
-      if (by == 'city') {
+      if (by === 'city') {
         const cities = (await client.database.collection('map').find({ 'city.level': { $exists: true } }).toArray()).filter(x => x.city.owner)
         cities.forEach(x => {
           if (!tempList[x.city.owner]) tempList[x.city.owner] = 0
           tempList[x.city.owner]++
         })
-      } else if (by == 'gold') {
+      } else if (by === 'gold') {
         const users = await client.database.collection('users').find({}).toArray()
         users.forEach(user => {
           tempList[user.uid] = user.gold
@@ -689,7 +688,7 @@ module.exports = client => {
           tempList[user.uid] = user.cities.reduce((a, b) => a + Object.values(b.population).reduce((c, d) => c + d, 0), 0)
         })
       }
-      sortedList = Object.keys(tempList).sort((a, b) => {
+      const sortedList = Object.keys(tempList).sort((a, b) => {
         if (tempList[a] > tempList[b]) return -1
         else if (tempList[a] < tempList[b]) return 1
         else return 0
