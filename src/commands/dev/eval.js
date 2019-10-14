@@ -18,6 +18,7 @@ module.exports = class EvalCommand extends Command {
     }
     try {
       const code = args.join(' ')
+      const client = this.c // eslint-disable-line no-unused-vars
       let evaled = eval(code) // eslint-disable-line no-eval
       if (evaled.then) evaled = await evaled
       if (typeof evaled !== 'string') { evaled = require('util').inspect(evaled) }
