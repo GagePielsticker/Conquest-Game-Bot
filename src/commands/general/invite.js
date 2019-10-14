@@ -1,23 +1,24 @@
-module.exports.load = client => {
-  const command = {
-    name: 'Invite',
-    category: 'general',
-    description: 'Invites the bot to the server.',
-    usage: `${client.settings.bot.prefix}invite`,
-    requiredPermission: null,
-    hasAccountCheck: false,
+const Command = require('../command.js')
 
-    run (message) {
-      message.channel.send(
-        new client.discord.MessageEmbed()
-          .setColor(client.settings.bot.embedColor)
-          .setTitle(':mailbox_with_mail: Invite')
-          .setDescription(`Invite the bot [here](${client.settings.bot.inviteURL})!`)
-          .setFooter(message.author.tag)
-          .setTimestamp()
-      )
-    }
+module.exports = class InviteCommand extends Command {
+  constructor (client) {
+    super('invite', ['i'], 'Invites the bot to the server.', {
+      usage: `${client.settings.bot.prefix}invite`,
+      accountCheck: false,
+      requiredPermission: null,
+      category: 'general'
+    })
+    this.c = client
   }
 
-  client.commands.push(command)
+  async run (message, args) {
+    message.channel.send(
+      new this.c.discord.MessageEmbed()
+        .setColor(this.c.settings.bot.embedColor)
+        .setTitle(':mailbox_with_mail: Invite')
+        .setDescription(`Invite the bot [here](${this.c.settings.bot.inviteURL})!`)
+        .setFooter(message.author.tag)
+        .setTimestamp()
+    )
+  }
 }
