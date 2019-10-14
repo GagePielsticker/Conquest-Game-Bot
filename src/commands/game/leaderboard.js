@@ -16,6 +16,7 @@ module.exports.load = client => {
       client.game.getLeaderboard(subject, page)
         .then(response => {
           const { leaderboard, totalPages } = response
+          if (page > totalPages) return client.sendError(message, `Invalid page, max pages: ${totalPages}`)
           message.channel.send(
             new client.discord.MessageEmbed()
               .setColor(client.settings.bot.embedColor)
@@ -26,7 +27,7 @@ module.exports.load = client => {
                       : leaderboard.map(x => `${x.index}.) ${client.users.get(x.user).username}`).join('\n')
                     }` + '\n' +
                     '```' + '\n\n' +
-                    `${leaderboard.length > 1 ? `Do \`${client.settings.bot.prefix}leaderboard ${subject} ${page + 1}\` to view next page` : ''}`
+                    `${page + 1 > totalPages ? '' : `Do \`${client.settings.bot.prefix}leaderboard ${subject} ${page + 1}\` to view next page`}`
               )
               .setFooter(message.author.tag)
               .setTimestamp()

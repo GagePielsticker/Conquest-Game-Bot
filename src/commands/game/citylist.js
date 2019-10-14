@@ -8,10 +8,13 @@ module.exports.load = client => {
     hasAccountCheck: true,
 
     async run (message) {
-      const page = message.content.split(' ').splice(1)[0] || 1
+      let page = message.content.split(' ').splice(1)[0] || 1
+      if (isNaN(page)) return client.sendError(message, 'Invalid number for page')
+      page = Number(page)
       client.game.getUserCityNames(message.author.id, page)
         .then(response => {
           const { cities, totalPages } = response
+          if (page > totalPages) return client.sendError(message, `Invalid page, max pages: ${totalPages}`)
           message.channel.send(
             new client.discord.MessageEmbed()
               .setColor(client.settings.bot.embedColor)
@@ -22,7 +25,7 @@ module.exports.load = client => {
                       : cities.map(x => `${x.index}.) ${x.name}`).join('\n')
                     }` + '\n' +
                     '```' + '\n\n' +
-                    `${cities.length > 1 ? `${client.settings.bot.prefix}city list ${page + 1}\` to view next page` : ''}`
+                    `${page + 1 > totalPages ? '' : `Do \`${client.settings.bot.prefix}city list ${page + 1}\` to view next page`}`
               )
               .setFooter(message.author.tag)
               .setTimestamp()
