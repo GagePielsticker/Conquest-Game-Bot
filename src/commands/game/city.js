@@ -106,7 +106,87 @@ module.exports.load = client => {
               { // population
                 emoji: '2⃣',
                 fn: () => {
-                  message.reply('wip')
+                  msg.edit(
+                    new client.discord.MessageEmbed()
+                      .setColor(client.settings.bot.embedColor)
+                      .setTitle('Move population')
+                      .setDescription('Select a population to move people from:' + '\n\n' +
+                        Object.keys(city.city.population).map(x => `\`${x}\`) ${city.city.population[x]}`).join('\n') + '\n' +
+                        'Send the job of which you want to take people from in this channel'
+                      )
+                      .setFooter(message.author.tag)
+                      .setTimestamp()
+                  ).then(async msg => {
+                    let populationFrom = await client.messageMenu(message, msg)
+                    if (!populationFrom) return
+                    populationFrom = populationFrom.toLowerCase()
+                    if (!Object.keys(city.city.population).includes(populationFrom)) return client.sendError(message, `Invalid population type \`${populationFrom}\``, msg)
+                    msg.edit(
+                      new client.discord.MessageEmbed()
+                        .setColor(client.settings.bot.embedColor)
+                        .setTitle('Move population')
+                        .setDescription('Select a population to move people to:' + '\n\n' +
+                          Object.keys(city.city.population).map(x => `\`${x}\`) ${city.city.population[x]}`).join('\n') + '\n' +
+                          'Send the job of which you want to move people from in this channel'
+                        )
+                        .setFooter(message.author.tag)
+                        .setTimestamp()
+                    ).then(async msg => {
+                      let populationTo = await client.messageMenu(message, msg)
+                      if (!populationTo) return
+                      populationTo = populationTo.toLowerCase()
+                      if (!Object.keys(city.city.population).includes(populationTo)) return client.sendError(message, `Invalid population type \`${populationTo}\``, msg)
+                      msg.edit(
+                        new client.discord.MessageEmbed()
+                          .setColor(client.settings.bot.embedColor)
+                          .setTitle('Move population')
+                          .setDescription('Respond with how many people you want to move')
+                          .setFooter(message.author.tag)
+                          .setTimestamp()
+                      ).then(async msg => {
+                        var amountToMove = await client.messageMenu(message, msg)
+                        if (!amountToMove) return
+                        if (isNaN(amountToMove)) return client.sendError(message, `Invalid number: \`${amountToMove}\``, msg)
+                        amountToMove = Number(amountToMove)
+                        msg.edit(
+                          new client.discord.MessageEmbed()
+                            .setColor(client.settings.bot.embedColor)
+                            .setTitle('Move population')
+                            .setDescription(`Confirm:\nMove \`${amountToMove}\` people from \`${populationFrom}\` to \`${populationTo}\``)
+                            .setFooter(message.author.tag)
+                        ).then(msg => {
+                          client.confirm(message, msg, {
+                            no: () => {
+                              msg.edit(
+                                new client.discord.MessageEmbed()
+                                  .setColor(client.settings.bot.embedColor)
+                                  .setTitle('Cancelled population move')
+                                  .setFooter(message.author.tag)
+                                  .setTimestamp()
+                              )
+                            },
+                            notime: () => {
+                              client.sendError(message, 'Ran out of time, cancelled', msg)
+                            },
+                            yes: () => {
+                              client.game.changePopulationJob(message.author.id, city.xPos, city.yPos, populationFrom, populationTo, amountToMove)
+                                .then(() => {
+                                  msg.edit(
+                                    new client.discord.MessageEmbed()
+                                      .setColor(client.settings.bot.embedColor)
+                                      .setTitle(`Moved population in ${city.city.name}`)
+                                      .setDescription(`Moved \`${amountToMove}\` people from \`${populationFrom}\` to \`${populationTo}\``)
+                                      .setFooter(message.author.tag)
+                                      .setTimestamp()
+                                  )
+                                })
+                                .catch(e => client.sendError(message, e, msg))
+                            }
+                          })
+                        })
+                      })
+                    })
+                  })
                 }
               }
             ])
