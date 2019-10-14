@@ -369,7 +369,7 @@ module.exports = client => {
 
       await client.database.collection('map').updateOne({ xPos: xPos, yPos: yPos }, {
         $set: {
-          'city.level': mapEntry.city.level++,
+          'city.level': mapEntry.city.level + 1,
           'city.resources.maxStone': mapEntry.city.level * 1.5 * 1000,
           'city.resources.maxMetal': mapEntry.city.level * 1.5 * 1000,
           'city.resources.maxWood': mapEntry.city.level * 1.5 * 1000,

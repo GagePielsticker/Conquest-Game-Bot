@@ -24,7 +24,8 @@ module.exports = class CityCommand extends Command {
               'Settings: ' + '\n' +
               ':one: Information' + '\n' +
               ':two: Name' + '\n' +
-              ':three: Population' +
+              ':three: Population' + '\n' +
+              ':four: Level Up' +
 
               '\n\n' +
               'React with the respective setting number to change those settings!'
@@ -47,9 +48,9 @@ module.exports = class CityCommand extends Command {
                   .addField('Has Stasis', `\`${mapEntry.city.inStasis ? 'Yes' : 'No'}\``, true)
                   .addField('Resources',
                     'Stone:' + `\`${mapEntry.city.resources.stone}\` / \`${mapEntry.city.resources.maxStone}\`` + '\n' +
-                      'Metal:' + `\`${mapEntry.city.resources.metal}\` / \`${mapEntry.city.resources.maxMetal}\`` + '\n' +
-                      'Wood:' + `\`${mapEntry.city.resources.wood}\` / \`${mapEntry.city.resources.maxWood}\`` + '\n' +
-                      'Food:' + `\`${mapEntry.city.resources.food}\` / \`${mapEntry.city.resources.maxFood}\`` + '\n'
+                    'Metal:' + `\`${mapEntry.city.resources.metal}\` / \`${mapEntry.city.resources.maxMetal}\`` + '\n' +
+                    'Wood:' + `\`${mapEntry.city.resources.wood}\` / \`${mapEntry.city.resources.maxWood}\`` + '\n' +
+                    'Food:' + `\`${mapEntry.city.resources.food}\` / \`${mapEntry.city.resources.maxFood}\`` + '\n'
                     , true)
                   .addField('Population', `${Object.keys(mapEntry.city.population).map(x => `${x.charAt(0).toUpperCase() + x.slice(1)}: \`${mapEntry.city.population[x]}\``).join('\n')}`, true)
                   .setFooter(message.author.tag)
@@ -170,6 +171,50 @@ module.exports = class CityCommand extends Command {
                   })
                 })
               })
+            }
+          },
+          {
+            emoji: '4⃣',
+            fn: async () => {
+              const amountToLevelUp = await this.c.game.calculateLevelCost(mapEntry.city.level)
+              msg.edit(
+                new this.c.discord.MessageEmbed()
+                  .setColor(this.c.settings.bot.embedColor)
+                  .setTitle(`Level up ${mapEntry.city.name}`)
+                  .setDescription(`This will take \`${amountToLevelUp.toLocaleString()}\` gold.\nAre you sure?`)
+                  .setFooter(message.author.tag)
+                  .setTimestamp()
+              )
+                .then(msg => {
+                  this.c.confirm(message, msg, {
+                    no: () => {
+                      msg.edit(
+                        new this.c.discord.MessageEmbed()
+                          .setColor(this.c.setting.bot.embedColor)
+                          .setTitle('Cancelled level up')
+                          .setFooter(message.author.tag)
+                          .setTimestamp()
+                      )
+                    },
+                    notime: () => {
+                      this.c.sendError(message, 'Ran out of time, cancelled', msg)
+                    },
+                    yes: () => {
+                      this.c.game.levelCity(message.author.id, mapEntry.xPos, mapEntry.yPos)
+                        .then(() => {
+                          msg.edit(
+                            new this.c.discord.MessageEmbed()
+                              .setColor(this.c.settings.bot.embedColor)
+                              .setTitle(`Leveled up ${mapEntry.city.name}!`)
+                              .setDescription(`Congratulations on leveling up to ${mapEntry.city.level + 1}`)
+                              .setFooter(message.author.tag)
+                              .setTimestamp()
+                          )
+                        })
+                        .catch(e => this.c.sendError(message, e, msg))
+                    }
+                  })
+                })
             }
           }
         ])
