@@ -1,41 +1,42 @@
-module.exports.load = client => {
-  const command = {
-    name: 'Leaderboard',
-    category: 'game',
-    description: 'View leaderboards in different subjects.',
-    usage: `${client.settings.bot.prefix}leaderboard {subject} {page-number}`,
-    requiredPermission: null,
-    hasAccountCheck: false,
+const Command = require('../command.js')
 
-    async run (message) {
-      let { 0: subject, 1: page } = message.content.split(' ').splice(1)
-      page = page || 1
-      if (isNaN(page)) return client.sendError(message, 'Invalid page number')
-      page = Number(page)
-      if (!['gold', 'city', 'population'].includes(subject)) return client.sendError(message, 'Invalid subject. Subjects; `gold`, `city`, `population`')
-      client.game.getLeaderboard(subject, page)
-        .then(response => {
-          const { leaderboard, totalPages } = response
-          if (page > totalPages) return client.sendError(message, `Invalid page, max pages: ${totalPages}`)
-          message.channel.send(
-            new client.discord.MessageEmbed()
-              .setColor(client.settings.bot.embedColor)
-              .setTitle(`Leaderboard for ${subject}`)
-              .setDescription(`You are viewing page \`${page}\` / \`${totalPages}\`` + '\n' +
-                    '```' + '\n' +
-                      `${leaderboard.length < 1 ? 'none'
-                      : leaderboard.map(x => `${x.index}.) ${client.users.get(x.user).username}`).join('\n')
-                    }` + '\n' +
-                    '```' + '\n\n' +
-                    `${page + 1 > totalPages ? '' : `Do \`${client.settings.bot.prefix}leaderboard ${subject} ${page + 1}\` to view next page`}`
-              )
-              .setFooter(message.author.tag)
-              .setTimestamp()
-          )
-        })
-        .catch(e => client.sendError(message, e))
-    }
+module.exports = class LeaderboardCommand extends Command {
+  constructor (client) {
+    super('leaderboard', ['lb'], 'View leaderboards in different subjects.', {
+      usage: `${client.settings.bot.prefix}leaderboard {subject} {page-number}`,
+      accountCheck: false,
+      requiredPermission: null,
+      category: 'game'
+    })
+    this.c = client
   }
 
-  client.commands.push(command)
+  async run (message, args) {
+    let { 0: subject, 1: page } = args
+    page = page || 1
+    if (isNaN(page)) return this.c.sendError(message, 'Invalid page number')
+    page = Number(page)
+    if (!['gold', 'city', 'population'].includes(subject)) return this.c.sendError(message, 'Invalid subject. Subjects; `gold`, `city`, `population`')
+    this.c.game.getLeaderboard(subject, page)
+      .then(response => {
+        const { leaderboard, totalPages } = response
+        if (page > totalPages) return this.c.sendError(message, `Invalid page, max pages: ${totalPages}`)
+        message.channel.send(
+          new this.c.discord.MessageEmbed()
+            .setColor(this.c.settings.bot.embedColor)
+            .setTitle(`Leaderboard for ${subject}`)
+            .setDescription(`You are viewing page \`${page}\` / \`${totalPages}\`` + '\n' +
+                    '```' + '\n' +
+                      `${leaderboard.length < 1 ? 'none'
+                      : leaderboard.map(x => `${x.index}.) ${this.c.users.get(x.user).username}`).join('\n')
+                    }` + '\n' +
+                    '```' + '\n\n' +
+                    `${page + 1 > totalPages ? '' : `Do \`${this.c.settings.bot.prefix}leaderboard ${subject} ${page + 1}\` to view next page`}`
+            )
+            .setFooter(message.author.tag)
+            .setTimestamp()
+        )
+      })
+      .catch(e => this.c.sendError(message, e))
+  }
 }
