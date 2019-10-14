@@ -665,7 +665,7 @@ module.exports = client => {
         .slice((pageNumber - 1) * 5, pageNumber * 5)
 
       // resolve
-      return Promise.resolve({ cities: outputArray, totalPages: userEntry.cities.length })
+      return Promise.resolve({ cities: outputArray, totalPages: Math.ceil(userEntry.cities.length / 5) })
     },
 
     getLeaderboard: async (by, pageNumber) => {
@@ -703,7 +703,7 @@ module.exports = client => {
           }
         })
           .slice((pageNumber - 1) * 5, pageNumber * 5),
-        totalPages: sortedList.length / 5
+        totalPages: Math.ceil(sortedList.length / 5)
       }
     },
 
