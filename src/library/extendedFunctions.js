@@ -17,12 +17,17 @@ module.exports = client => {
      */
   client.reloadCommands = () => {
     return new Promise(async (resolve, reject) => {
-      client.commands = [] // empty / setup commands array
+      client.commands.clear()
       await fs.readdir(__dirname + '/../commands/', (err, files) => {
         if (err) return reject(`Error loading command files: ${err}`)
         files.forEach(folder => {
+          if (folder.endsWith('.js')) return
           fs.readdir(`${__dirname}/../commands/${folder}/`, (err, commands) => {
-            commands.forEach(cmd => require(`${__dirname}/../commands/${folder}/${cmd}`).load(client))
+            if (err) reject(err)
+            commands.forEach(cmd => {
+              const Command = require(`${__dirname}/../commands/${folder}/${cmd}`)
+              client.commands.set(cmd, new Command(client))
+            })
           })
         })
       })
@@ -34,27 +39,39 @@ module.exports = client => {
      * Executes Command, requires message object
      * @param {Object} message
      */
-  client.executeCommand = message => {
-    return new Promise((resolve, reject) => {
-      client.commands.forEach(async command => {
-        if (command.name.toLowerCase() === message.content.split(' ')[0].toLowerCase().replace(client.settings.bot.prefix, '')) {
-          // if there is a required account check
-          if (command.hasAccountCheck) {
-            const entry = await client.database.collection('users').findOne({ uid: message.author.id })
-            if (entry == null) return reject('User does not have a game account created.')
-          }
-          // check if user has designated role for command
-          if (command.requiredPermission != null) {
-            if (!message.member.permissions.has(command.requiredPermission)) return reject('User does not have permissions to use command.')
-          }
+  client.executeCommand = async message => {
+    const args = message.content.slice(client.settings.bot.prefix.length).split(' ')
+    const command = args.shift().toLowerCase()
+    const cmd = client.commands.find(x => x.name === command || x.aliases.includes(command))
+    if (!cmd) return
 
-          // runs command
-          command.run(message) // this line runs the command, put any checks above it and reject on errors
-          resolve()
-        }
-      })
-    })
+    if (cmd.accountCheck) {
+      const account = await client.database.collection('users').findOne({ uid: message.author.id })
+      if (!account) return
+    }
+
+    if (cmd.requiredPermission && !message.member.hasPermission(cmd.requiredPermission)) return
+
+    cmd.run(message, args)
   }
+
+  // client.commands.forEach(async command => {
+  //   if (command.name.toLowerCase() === message.content.split(' ')[0].toLowerCase().replace(client.settings.bot.prefix, '')) {
+  //     // if there is a required account check
+  //     if (command.hasAccountCheck) {
+  //       const entry = await client.database.collection('users').findOne({ uid: message.author.id })
+  //       if (entry == null) return reject('User does not have a game account created.')
+  //     }
+  //     // check if user has designated role for command
+  //     if (command.requiredPermission != null) {
+  //       if (!message.member.permissions.has(command.requiredPermission)) return reject('User does not have permissions to use command.')
+  //     }
+
+  //     // runs command
+  //     command.run(message) // this line runs the command, put any checks above it and reject on errors
+  //     resolve()
+  //   }
+  // })
 
   /**
      * Creates an error discord embed and sends

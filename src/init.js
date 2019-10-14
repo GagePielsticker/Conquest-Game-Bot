@@ -5,7 +5,7 @@ const client = new Discord.Client({ shardCount: 'auto' })
 // Extra client appends
 client.discord = Discord
 client.settings = require('./settings/settings.json')
-
+client.commands = new Discord.Collection()
 // Send client to handlers
 require('./library/database.js')(client)
 require('./library/extendedFunctions.js')(client)
