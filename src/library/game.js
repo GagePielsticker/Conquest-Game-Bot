@@ -694,14 +694,17 @@ module.exports = client => {
         else return 0
       })
       let i = 0
-      return sortedList.map(x => {
-        i++
-        return {
-          index: i,
-          user: x
-        }
-      })
-        .slice((pageNumber - 1) * 5, pageNumber * 5)
+      return {
+        leaderboard: sortedList.map(x => {
+          i++
+          return {
+            index: i,
+            user: x
+          }
+        })
+          .slice((pageNumber - 1) * 5, pageNumber * 5),
+        totalPages: sortedList.length / 5
+      }
     },
 
     /**
