@@ -16,10 +16,10 @@ module.exports = client => {
      * Reloads commands into the commands array
      */
   client.reloadCommands = () => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise(async (resolve, reject) => { // eslint-disable-line no-async-promise-executor
       client.commands.clear()
-      await fs.readdir(__dirname + '/../commands/', (err, files) => {
-        if (err) return reject(`Error loading command files: ${err}`)
+      await fs.readdir(__dirname + '/../commands/', (err, files) => { // eslint-disable-line no-path-concat
+        if (err) return reject(`Error loading command files: ${err}`) // eslint-disable-line prefer-promise-reject-errors
         files.forEach(folder => {
           if (folder.endsWith('.js')) return
           fs.readdir(`${__dirname}/../commands/${folder}/`, (err, commands) => {
