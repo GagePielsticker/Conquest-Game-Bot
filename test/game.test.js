@@ -42,7 +42,31 @@ test('Check tile Created where user spawns', async () => {
 
 test('Check manual tile creation', async () => {
     await client.game.createTile(0, 0)
-    let map = await client.database.collection('map').findOne({0, 0})
+    let map = await client.database.collection('map').findOne({xPos:0, yPos:0})
     expect(map).not.toBe(null)
 })
 
+test('Check calculate time function', async () => {
+    let time = await client.game.calculateTravelTime(1, 1, 2, 2)
+
+    // Calculate time
+    const a = 1 - 2
+    const b = 1 - 2
+    const distance = Math.sqrt(a * a + b * b)
+    let checkTime = distance * 10
+
+    expect(time).toBe(Math.floor(checkTime * 1000))
+})
+
+test('user can settle location', async () => {
+    expect().resolves
+})
+
+test('user settling works', async () => {
+    await client.game.settleLocation(client.user.id, 'test')
+    let entry = await client.database.collection('users').findOne({uid:client.user.id})
+    let map = await client.database.collection('users').findOne({xPos:entry.xPos, yPos:entry.yPos}) 
+
+    expect(entry.cities.length).not.toBe(0)
+    expect(map.city).not.toBe(null)
+})
