@@ -89,3 +89,21 @@ test('user can set city name', async () => {
     expect(newEntry.cities[0].name).toBe('newName')
     expect(map.city.name).toBe('newName')
 })
+
+test('user can calculate level cost', async () => {
+    let checkCost = await client.game.calculateLevelCost(5)
+
+    const power = Math.pow(1.63068, 5 + 1)
+    const cost = Math.floor(3760.60309 * power)
+
+    expect(checkCost).toBe(cost)
+})
+
+test('user can calculate max population', async () => {
+    let checkPop = await client.game.calculateMaxPopulation(5)
+
+    let pop = 5 * 1000
+
+    expect(checkPop).toBe(pop)
+})
+
