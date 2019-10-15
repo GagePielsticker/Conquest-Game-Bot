@@ -66,3 +66,26 @@ test('user settling works', async () => {
     expect(entry.cities.length).not.toBe(0)
     expect(map.city).not.toBe(null)
 })
+
+test('user can set flag url', async () => {
+    await client.game.setFlag(client.user.id, 'test')
+    let entry = await client.database.collection('users').findOne({uid:client.user.id})
+    expect(entry.flagURL).toBe('test')
+})
+
+test('user can set empire name', async () => {
+    await client.game.setEmpireName(client.user.id, 'test')
+    let entry = await client.database.collection('users').findOne({uid:client.user.id})
+    expect(entry.empireName).toBe('test')
+})
+
+test('user can set city name', async () => {
+    let entry = await client.database.collection('users').findOne({uid:client.user.id})
+    await client.game.setCityName(client.user.id, entry.xPos, entry.yPos, 'newName')
+
+    let newEntry = await client.database.collection('users').findOne({uid:client.user.id})
+    let map = await client.database.collection('map').findOne({xPos:entry.xPos, yPos:entry.yPos})
+
+    expect(newEntry.cities[0].name).toBe('newName')
+    expect(map.city.name).toBe('newName')
+})
