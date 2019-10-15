@@ -62,16 +62,23 @@ module.exports = client => {
       const mapObject = {
         xPos: xPos,
         yPos: yPos,
+        hasLock: false,
         city: null,
         hasWonder: false
       }
 
       // calculate if city and wonder spawns with weighted chance
-      const hasNPCCity = chance.weighted([true, false], [15, Math.floor(100 - 15)])
-      const hasWonder = chance.weighted([true, false], [5, Math.floor(100 - 5)])
+      const hasNPCCity = chance.weighted([true, false], [15, 85])
+      const hasWonder = chance.weighted([true, false], [5, 95])
+      const hasLock = chance.weighted([true, false], [20, 80])
 
       // if tile has wonder change objects value
       if (hasWonder) mapObject.hasWonder = true
+
+      if (hasLock) {
+        hasNPCCity = false
+        mapObject.hasLock = true
+      }
 
       // if tile has npc city randomly generate one
       if (hasNPCCity) {
@@ -120,7 +127,13 @@ module.exports = client => {
 
       // check if tile exist
       const entry = await client.database.collection('map').findOne({ xPos: xPos, yPos: yPos })
-      if (entry == null) await client.game.createTile(xPos, yPos)
+      if (entry == null) {
+        client.game.createTile(xPos, yPos)
+        entry = await client.database.collection('map').findOne({ xPos: xPos, yPos: yPos })
+      }
+
+      // check if movelock is set
+      if (entry.hasLock) return Promise.reject('That land has a natural barrier.')
 
       // check if user is in cooldown
       if (client.game.movementCooldown.has(uid)) return Promise.reject('User is currently Travelling.') // eslint-disable-line prefer-promise-reject-errors

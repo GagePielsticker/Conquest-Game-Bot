@@ -5,7 +5,8 @@
   "main": "./src/init.js",
   "scripts": {
     "prod": "node ./src/init.js",
-    "dev": "node ./src/init.js -d"
+    "dev": "node ./src/init.js -d",
+    "test": "jest"
   },
   "author": "Gage Pielsticker",
   "license": "MIT",
@@ -21,5 +22,8 @@
     "project-name-generator": "^2.1.7",
     "standard": "^14.3.1",
     "systeminformation": "^4.14.11"
+  },
+  "devDependencies": {
+    "jest": "^24.9.0"
   }
 }
