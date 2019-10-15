@@ -107,3 +107,18 @@ test('user can calculate max population', async () => {
     expect(checkPop).toBe(pop)
 })
 
+test('user can level city', async () => {
+
+    //give user some money
+    await client.database.collection('users').updateOne({uid:client.user.id}, {$set:{gold:10000}})
+
+    let entry = await client.database.collection('users').findOne({uid:client.user.id})
+    let map = await client.database.collection('map').findOne({xPos:entry.xPos, yPos:entry.yPos})
+
+    await client.game.levelCity(client.user.id, entry.xPos, entry.yPos)
+
+    let newEntry = await client.database.collection('users').findOne({uid:client.user.id})
+    let newMap = await client.database.collection('map').findOne({xPos:entry.xPos, yPos:entry.yPos})
+    expect(newEntry.cities[0].level).toBe(2)
+    expect(newMap.city.level).toBe(2)
+})
