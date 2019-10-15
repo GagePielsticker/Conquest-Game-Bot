@@ -68,9 +68,9 @@ module.exports = client => {
       }
 
       // calculate if city and wonder spawns with weighted chance
-      const hasNPCCity = chance.weighted([true, false], [15, 85])
-      const hasWonder = chance.weighted([true, false], [5, 95])
-      const hasLock = chance.weighted([true, false], [20, 80])
+      let hasNPCCity = chance.weighted([true, false], [15, 85])
+      let hasWonder = chance.weighted([true, false], [5, 95])
+      let hasLock = chance.weighted([true, false], [20, 80])
 
       // if tile has wonder change objects value
       if (hasWonder) mapObject.hasWonder = true
