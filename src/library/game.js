@@ -24,12 +24,22 @@ module.exports = client => {
       if (userEntry != null) return Promise.reject('User exist in database.') // eslint-disable-line prefer-promise-reject-errors
 
       // calculate spawn position
-      const xPos = Math.floor(Math.random() * (client.settings.game.map.xMax - client.settings.game.map.xMin) + client.settings.game.map.xMin)
-      const yPos = Math.floor(Math.random() * (client.settings.game.map.yMax - client.settings.game.map.yMin) + client.settings.game.map.yMin)
+      let xPos
+      let yPos
+      let mapEntry
 
-      // check if tile exist if not create it
-      const mapEntry = await client.database.collection('map').findOne({ xPos: xPos, yPos: yPos })
-      if (mapEntry == null) await client.game.createTile(xPos, yPos)
+      const create = async () => {
+        xPos = Math.floor(Math.random() * (client.settings.game.map.xMax - client.settings.game.map.xMin) + client.settings.game.map.xMin)
+        yPos = Math.floor(Math.random() * (client.settings.game.map.yMax - client.settings.game.map.yMin) + client.settings.game.map.yMin)
+        mapEntry = await client.database.collection('map').findOne({ xPos: xPos, yPos: yPos })
+        if (mapEntry == null) {
+          await client.game.createTile(xPos, yPos)
+          mapEntry = await client.database.collection('map').findOne({ xPos: xPos, yPos: yPos })
+          if (mapEntry.hasLock) await create()
+        }
+      }
+
+      await create()
 
       // set default user object
       const userObject = {
@@ -128,7 +138,7 @@ module.exports = client => {
       // check if tile exist
       let entry = await client.database.collection('map').findOne({ xPos: xPos, yPos: yPos })
       if (entry == null) {
-        client.game.createTile(xPos, yPos)
+        await client.game.createTile(xPos, yPos)
         entry = await client.database.collection('map').findOne({ xPos: xPos, yPos: yPos })
       }
 

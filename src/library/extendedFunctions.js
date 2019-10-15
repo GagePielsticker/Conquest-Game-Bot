@@ -47,7 +47,7 @@ module.exports = client => {
 
     if (cmd.accountCheck) {
       const account = await client.database.collection('users').findOne({ uid: message.author.id })
-      if (!account) return
+      if (!account) return client.sendError(message, `You don't have an account! Do \`${client.settings.bot.prefix}start\` to get started!`)
     }
 
     if (cmd.requiredPermission && !message.member.hasPermission(cmd.requiredPermission)) return
