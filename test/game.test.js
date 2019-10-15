@@ -14,17 +14,35 @@ beforeAll(async () => {
     return new Promise((resolve, reject) => {
         MongoClient.connect(`mongodb://${client.settings.database.username ? `${client.settings.database.username}:${client.settings.database.password}@` : ''}${client.settings.database.host}:${client.settings.database.port}`, { useNewUrlParser: true }, async (err, data) => {
             client.database = data.db(client.settings.database.database + '_test')
-            setTimeout(() => {resolve()}, 500)
+
+            /* make sure both databases are empty */
+            client.database.collection('users').remove({})
+            client.database.collection('map').remove({})
+
+            resolve()
         })
     })
 })
 
-/* get the game library on client */
+/* Get the game library on client */
 require('../src/library/game.js')(client)
 
+/** Begin unit test */
 test('User object can be created and read in database', async () => {
     await client.game.createUser(client.user.id)
     let entry = await client.database.collection('users').findOne({uid:client.user.id})
     expect(entry).not.toBe(null)
+})
+
+test('Check tile Created where user spawns', async () => {
+    let entry = await client.database.collection('users').findOne({uid:client.user.id})
+    let map = await client.database.collection('users').findOne({xPos:entry.xPos, yPos:entry.yPos})
+    expect(map).not.toBe(null)
+})
+
+test('Check manual tile creation', async () => {
+    await client.game.createTile(0, 0)
+    let map = await client.database.collection('map').findOne({0, 0})
+    expect(map).not.toBe(null)
 })
 
