@@ -58,10 +58,6 @@ test('Check calculate time function', async () => {
     expect(time).toBe(Math.floor(checkTime * 1000))
 })
 
-test('user can settle location', async () => {
-    expect().resolves
-})
-
 test('user settling works', async () => {
     await client.game.settleLocation(client.user.id, 'test')
     let entry = await client.database.collection('users').findOne({uid:client.user.id})
