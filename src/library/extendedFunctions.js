@@ -62,7 +62,7 @@ module.exports = client => {
      * @param {Object} edit Message to edit, if supplied will be editted rather than sent to channel.
      */
   client.sendError = (message, string, edit) => {
-    const embed = this.c.em(message)
+    const embed = client.em(message)
       .setTitle(':x: Error')
       .setDescription(`${string}`)
     if (edit) return edit.edit(embed)
@@ -75,7 +75,7 @@ module.exports = client => {
      * @param {String} string
      */
   client.sendSuccess = (message, string) => {
-    const embed = this.c.em(message)
+    const embed = client.em(message)
       .setTitle(':white_check_mark: Success')
       .setDescription(`${string}`)
     message.channel.send(embed)

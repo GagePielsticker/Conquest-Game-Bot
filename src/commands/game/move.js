@@ -68,7 +68,7 @@ module.exports = class MoveCommand extends Command {
                   )
                 }, time)
               })
-              .catch(e => this.c.sendError(message, e))
+              .catch(e => this.c.sendError(message, e, msg))
           }
         })
       })
