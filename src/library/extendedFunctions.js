@@ -4,6 +4,7 @@ module.exports = client => {
      */
   const fs = require('fs')
   const moment = require('moment')
+  const path = require('path')
 
   /**
      * Pretty Logging Outputs
@@ -12,27 +13,41 @@ module.exports = client => {
   const chalk = require('chalk')
   client.log = string => console.log(`${chalk.green(moment().format('MMMM Do YYYY, h:mm:ss a'))} :: ${string}`)
 
+  const promiseReaddir = (dir) => {
+    return new Promise((resolve, reject) => {
+      fs.readdir(dir, (err, files) => {
+        if (err) return reject(err)
+        resolve(files)
+      })
+    })
+  }
+
   /**
      * Reloads commands into the commands array
      */
-  client.reloadCommands = () => {
-    return new Promise(async (resolve, reject) => { // eslint-disable-line no-async-promise-executor
-      client.commands.clear()
-      await fs.readdir(__dirname + '/../commands/', (err, files) => { // eslint-disable-line no-path-concat
-        if (err) return reject(`Error loading command files: ${err}`) // eslint-disable-line prefer-promise-reject-errors
-        files.forEach(folder => {
-          if (folder.endsWith('.js')) return
-          fs.readdir(`${__dirname}/../commands/${folder}/`, (err, commands) => {
-            if (err) reject(err)
-            commands.forEach(cmd => {
-              const Command = require(`${__dirname}/../commands/${folder}/${cmd}`)
-              client.commands.set(cmd, new Command(client))
-            })
-          })
-        })
+  client.reloadCommands = async () => {
+    const promises = []
+    let cmdFolders = promiseReaddir(path.resolve(__dirname, '../commands')).catch(client.log)
+    promises.push(cmdFolders)
+    cmdFolders = await cmdFolders
+    cmdFolders.forEach(async folder => {
+      if (folder.endsWith('.js')) return
+      let commands = promiseReaddir(path.resolve(__dirname, '../commands', folder)).catch(client.log)
+      promises.push(commands)
+      commands = await commands
+      commands.forEach(cmd => {
+        const Command = require(path.resolve(__dirname, '../commands', folder, cmd))
+        client.commands.set(cmd, new Command(client))
       })
-      await resolve()
     })
+
+    await Promise.all(promises)
+      .then(() => {
+        client.log('Loaded all commands')
+      })
+      .catch(err => {
+        client.log('Error while loading commands; ' + err)
+      })
   }
 
   /**
