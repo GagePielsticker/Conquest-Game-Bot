@@ -128,6 +128,21 @@ module.exports = client => {
     return fn.yes()
   }
 
+  /**
+   * Create a reaction menu
+   * @param {Object} message The message of which the user enacting menu is using
+   * @param {Object} invoke The message in which to create the reaction menu on
+   * @param {Array<emojiClass>} stuff Array of items
+   * @example
+   * client.reactMenu(message, invoke, [
+   *  {
+   *    emoji: 'id or unicode or Discord.Emoji',
+   *    fn: () => {
+   *      // do things if this emoji was reacted with
+   *    }
+   *  }
+   * ])
+   */
   client.reactMenu = async (message, invoke, stuff) => {
     const emojis = stuff.map(x => x.emoji.id || x.emoji)
 
@@ -151,6 +166,12 @@ module.exports = client => {
     response.fn()
   }
 
+  /**
+   * Create a reaction menu
+   * @param {Object} message The message of which the user enacting menu is using
+   * @param {Object} invoke The message in which to create the message menu on
+   * @returns {Promise<String>} Message content of the message sent back
+   */
   client.messageMenu = async (message, invoke) => {
     const response = await message.channel.awaitMessages(
       (m) => m.author.equals(message.author),
