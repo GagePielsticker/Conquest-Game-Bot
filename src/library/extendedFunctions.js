@@ -35,6 +35,7 @@ module.exports = client => {
       let commands = promiseReaddir(path.resolve(__dirname, '../commands', folder)).catch(client.log)
       promises.push(commands)
       commands = await commands
+      if (!commands) return
       commands.forEach(cmd => {
         const Command = require(path.resolve(__dirname, '../commands', folder, cmd))
         client.commands.set(cmd, new Command(client))
@@ -106,8 +107,7 @@ module.exports = client => {
    * @param {Function} fn.notime Ran when user runs out of time
    */
   client.confirm = async (ogmsg, message, fn) => {
-    message.react(client.emoji.yes)
-    message.react(client.emoji.no)
+    const reacts = [message.react(client.emoji.yes), message.react(client.emoji.no)]
     const reactions = await message.awaitReactions(
       (reaction, user) => user.equals(ogmsg.author) && [client.emoji.yes.id, client.emoji.no.id].includes(reaction._emoji.id),
       {
@@ -116,7 +116,10 @@ module.exports = client => {
       }
     )
 
-    message.reactions.removeAll()
+    Promise.all(reacts)
+      .then(() => {
+        message.reactions.removeAll()
+      })
 
     const reaction = reactions.first()
     if (!reaction) return fn.notime()
@@ -128,7 +131,7 @@ module.exports = client => {
   client.reactMenu = async (message, invoke, stuff) => {
     const emojis = stuff.map(x => x.emoji.id || x.emoji)
 
-    emojis.forEach(x => invoke.react(x))
+    const reacts = emojis.map(x => invoke.react(x))
     const react = await invoke.awaitReactions(
       (reaction, user) => user.equals(message.author) && (emojis.includes(reaction._emoji.id) || emojis.includes(reaction._emoji.name)),
       {
@@ -136,9 +139,12 @@ module.exports = client => {
         time: 30000
       }
     )
-    invoke.reactions.removeAll()
+    Promise.all(reacts)
+      .then(() => {
+        invoke.reactions.removeAll()
+      })
     const reaction = react.first()
-    if (!reaction) client.sendError(message, 'Ran out of time', invoke)
+    if (!reaction) return client.sendError(message, 'Ran out of time', invoke)
     const emoji = reaction.emoji
     const response = stuff.find(x => [emoji.id, emoji.name].includes(x.emoji) || [emoji.id, emoji.name].includes(x.emoji.id))
     if (!response) return client.sendError(message, 'Invalid response', invoke)
