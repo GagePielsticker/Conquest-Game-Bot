@@ -61,6 +61,8 @@ module.exports = client => {
     const cmd = client.commands.find(x => x.name === command || x.aliases.includes(command))
     if (!cmd) return
 
+    if (cmd.beta && !client.beta) return
+    
     if (cmd.accountCheck) {
       const account = await client.database.collection('users').findOne({ uid: message.author.id })
       if (!account) return client.sendError(message, `You don't have an account! Do \`${client.settings.bot.prefix}start\` to get started!`)

@@ -53,7 +53,7 @@ module.exports = class MoveCommand extends Command {
           yes: () => {
             this.c.game.moveUser(message.author.id, newX, newY)
               .then((time) => {
-                if (message.content.match(/-d/) && this.c.beta) time = 1000
+                if (message.content.match(/-d/) && this.c.dev) time = 1000
                 msg.edit(
                   this.c.em(message)
                     .setTitle('Moving!')

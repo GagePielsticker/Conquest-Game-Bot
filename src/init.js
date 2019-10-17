@@ -20,10 +20,15 @@ if (process.argv.includes('-d')) {
   client.settings.bot.token = client.settings.bot.betaToken
   client.settings.bot.prefix = client.settings.bot.betaPrefix
   client.settings.database.database = client.settings.database.betaDatabase
+  client.dev = true
+} if(process.argv.includes('-b')) {
+
+  client.settings.database.database = client.settings.database.betaDatabase
+  client.dev = false
   client.beta = true
 } else {
   require('./library/dbl.js')(client)
-  client.beta = false
+  client.dev = false
 }
 
 // Initialize bot

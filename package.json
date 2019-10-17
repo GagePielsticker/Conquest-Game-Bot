@@ -6,6 +6,7 @@
   "scripts": {
     "prod": "node ./src/init.js",
     "dev": "node ./src/init.js -d",
+    "beta": "node ./src/init.js -b",
     "test": "jest"
   },
   "author": "Gage Pielsticker",

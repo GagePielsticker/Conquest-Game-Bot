@@ -40,7 +40,7 @@ module.exports = class ScoutCommand extends Command {
             this.c.game.scoutTile(message.author.id)
               .then(async response => {
                 let { time, mapEntry } = response
-                if (message.content.match(/-d/) && this.c.beta) time = 1000
+                if (message.content.match(/-d/) && this.c.dev) time = 1000
                 const msg = time != null ? await confirmMsg.edit(
                   this.c.em(message)
                     .setTitle('Scouting Tile')
