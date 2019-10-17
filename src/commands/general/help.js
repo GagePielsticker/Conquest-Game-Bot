@@ -14,14 +14,14 @@ module.exports = class HelpCommand extends Command {
   async run (message, args) {
     const cmd = args[0]
     if (cmd) {
-      const command = this.c.commands.find(x => x.name.toLowerCase() === cmd.toLowerCase() || x.aliases.includes(cmd.toLowerCase))
+      const command = this.c.commands.find(x => x.name.toLowerCase() === cmd.toLowerCase() || x.aliases.includes(cmd.toLowerCase()))
       if (!command || command.category === 'dev') return this.c.sendError(message, `Invalid command: \`${cmd}\``)
-      return message.channel.send(
-        this.c.em(message)
-          .setTitle(command.name)
-          .addField('Description', `\`\`\`${command.description}\`\`\``)
-          .addField('Usage', `\`\`\`${command.usage}\`\`\``)
-      )
+      const embed = this.c.em(message)
+        .setTitle(command.name)
+        .addField('Description', `\`\`\`${command.description}\`\`\``)
+        .addField('Usage', `\`\`\`${command.usage}\`\`\``)
+      if (command.aliases.length > 0) embed.addField('Aliases', `\`\`\`${command.aliases.join('\n')}\`\`\``)
+      return message.channel.send(embed)
     }
     const embed = this.c.em(message)
       .setTitle('Help')
