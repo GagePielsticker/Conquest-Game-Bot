@@ -17,13 +17,14 @@ require('./library/cronJobs.js')(client)
 
 // checks if dev mode is set to true
 if (process.argv.includes('-d')) {
-  client.settings.bot.token = client.settings.bot.betaToken
-  client.settings.bot.prefix = client.settings.bot.betaPrefix
+  client.settings.bot.token = client.settings.bot.tokens.dev
+  client.settings.bot.prefix = client.settings.bot.prefixes.dev
   client.settings.database.database = client.settings.database.betaDatabase
   client.dev = true
-} if(process.argv.includes('-b')) {
-
+} if (process.argv.includes('-b')) {
   client.settings.database.database = client.settings.database.betaDatabase
+  client.settings.bot.token = client.settings.bot.tokens.beta
+  client.settings.bot.prefix = client.settings.bot.prefixes.beta
   client.dev = false
   client.beta = true
 } else {

@@ -1,9 +1,15 @@
 {
     "bot" : {
         "prefix" : "c!",
-        "betaPrefix" : "c!!",
-        "betaToken" : "NjMyMDE5Mzg5MzQzOTg5NzYw.XZ_T8w.MLCre-Imb1Dp9b1a4efHtjf5BHg",
+        "prefixes": {
+            "beta": "cb!",
+            "dev": "c!!"
+        },
         "token" : "NTk1ODE3ODY1NDkyNDMwODQ4.XZ_Wvg.vi9VLhHlfGmfJsF-J6DdG1Bj1vg",
+        "tokens": {
+            "dev": "NjMyMDE5Mzg5MzQzOTg5NzYw.XZ_T8w.MLCre-Imb1Dp9b1a4efHtjf5BHg",
+            "beta": "NjM0NTE5NTc5Mjg0MDc4NTk1.XajzYw.ZvHt7f2OyxrkqWbwcj76lc6cfhw"
+        },
         "embedColor" : 11814727,
         "activity" : "c!help",
         "developers" : ["174511937151827969", "142408079177285632"],
