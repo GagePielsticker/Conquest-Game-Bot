@@ -6,6 +6,7 @@ const client = new Discord.Client({ shardCount: 'auto' })
 client.discord = Discord
 client.settings = require('./settings/settings.json')
 client.commands = new Discord.Collection()
+
 // Send client to handlers
 require('./library/database.js')(client)
 require('./library/extendedFunctions.js')(client)
@@ -18,6 +19,7 @@ require('./library/cronJobs.js')(client)
 if (process.argv.includes('-d')) {
   client.settings.bot.token = client.settings.bot.betaToken
   client.settings.bot.prefix = client.settings.bot.betaPrefix
+  client.settings.database.database = client.settings.database.betaDatabase
   client.beta = true
 } else {
   require('./library/dbl.js')(client)
