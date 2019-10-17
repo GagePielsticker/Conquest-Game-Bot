@@ -4,6 +4,9 @@ module.exports = client => {
   const chance = new Chance()
   const moment = require('moment')
   const nameGenerator = require('project-name-generator')
+  const PF = PF = require('pathfinding')
+  const grid = new PF.grid(client.settings.game.map.xMax * 2, client.settings.game.map.yMax * 2)
+  const finder = new PF.AStarFinder()
 
   /** @namespace */
   client.game = {
@@ -152,8 +155,11 @@ module.exports = client => {
       if (xPos > client.settings.game.map.xMax || xPos < client.settings.game.map.xMin) return Promise.reject('Invalid location.') // eslint-disable-line prefer-promise-reject-errors
       if (yPos > client.settings.game.map.yMax || yPos < client.settings.game.map.yMin) return Promise.reject('Invalid location.') // eslint-disable-line prefer-promise-reject-errors
 
-      // calculate travel time to target
+      // calculate travel time to target and get tiles to target
       const travelTime = await client.game.calculateTravelTime(userEntry.xPos, userEntry.yPos, xPos, yPos)
+      const travelTiles = Math.ceil(Math.sqrt((userEntry.xPos - xPos) + (userEntry.yPos - yPos)))
+      const movementPerCycle = Math.ceil(travelTime / travelTiles)
+      const timePerCycle = Math.ceil(travelTiles/travelTime)
 
       // add user to cooldown array and setup task
       client.game.movementCooldown.set(uid, {
@@ -161,9 +167,22 @@ module.exports = client => {
         endTime: moment().unix() + travelTime
       })
 
+      //find the path
+      let path = finder.findPath(userEntry.xPos, userEntry.yPos, xPos, yPos)
+      let i = 0
+
+      //handle movement per cycle
+      let movementInterval = setInterval(() => {
+        client.database.collection('users').updateOne({uid: uid}, {$set: {xPos: path[i][0], yPos: path[i][1]}})
+        i++  
+      }, timePerCycle)
+
       setTimeout(() => {
         // remove user from cooldown array
         client.game.movementCooldown.delete(uid)
+
+        //clear movement interval
+        clearInterval(movementInterval)
 
         // move user in database
         client.database.collection('users').updateOne({ uid: uid }, { $set: { xPos: xPos, yPos: yPos } })
