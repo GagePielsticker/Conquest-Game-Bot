@@ -21,7 +21,8 @@ if (process.argv.includes('-d')) {
   client.settings.bot.prefix = client.settings.bot.prefixes.dev
   client.settings.database.database = client.settings.database.betaDatabase
   client.dev = true
-} if (process.argv.includes('-b')) {
+  client.beta = false
+} else if (process.argv.includes('-b')) {
   client.settings.database.database = client.settings.database.betaDatabase
   client.settings.bot.token = client.settings.bot.tokens.beta
   client.settings.bot.prefix = client.settings.bot.prefixes.beta
@@ -30,6 +31,7 @@ if (process.argv.includes('-d')) {
 } else {
   require('./library/dbl.js')(client)
   client.dev = false
+  client.beta = false
 }
 
 // Initialize bot

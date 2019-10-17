@@ -15,7 +15,7 @@ module.exports = class HelpCommand extends Command {
     const cmd = args[0]
     if (cmd) {
       const command = this.c.commands.find(x => x.name.toLowerCase() === cmd.toLowerCase() || x.aliases.includes(cmd.toLowerCase()))
-      if (!command || command.category === 'dev') return this.c.sendError(message, `Invalid command: \`${cmd}\``)
+      if (!command || (this.c.dev && command.category === 'dev')) return this.c.sendError(message, `Invalid command: \`${cmd}\``)
       const embed = this.c.em(message)
         .setTitle(command.name)
         .addField('Description', `\`\`\`${command.description}\`\`\``)
@@ -27,7 +27,10 @@ module.exports = class HelpCommand extends Command {
       .setTitle('Help')
       .setDescription(`Use \`${this.c.settings.bot.prefix}help {command}\` to learn more about the command.`)
 
-    this.c.commands.map(x => x.category).filter(x => x !== 'dev') // remove dev
+    let commandCategories = this.c.commands.map(x => x.category)
+    if (!this.c.dev) commandCategories = commandCategories.filter(x => x !== 'dev')
+
+    commandCategories
       .reduce((a, b) => { // remove dupes
         a = a || []
         if (!a.includes(b)) a.push(b)
