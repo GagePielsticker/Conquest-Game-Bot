@@ -191,11 +191,11 @@ module.exports = client => {
       let i = 0
 
       //add user to movement database
-      client.database.collection('movement').insertOne({
+      client.database.collection('movement').updateOne({uid: uid}, {
         uid: uid,
         xPos: xPos,
         yPos: yPos
-      })
+      }, {upsert: true})
 
       // add user to cooldown array and setup task
       let movementInterval = setInterval(() => {
