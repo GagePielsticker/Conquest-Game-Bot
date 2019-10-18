@@ -14,7 +14,7 @@ module.exports = client => {
         return a
       }, {})
 
-    client.loadMovement()
+    await client.loadMovement()
       .then(client.log)
       .catch(client.log)
   })
