@@ -205,7 +205,7 @@ module.exports = client => {
 
         // remove user from cooldown array and database
         client.game.movementCooldown.delete(uid)
-        client.database.collection('movement').remove({uid: uid})
+        client.database.collection('movement').removeOne({uid: uid})
 
         // move user in database
         client.database.collection('users').updateOne({ uid: uid }, { $set: { xPos: xPos, yPos: yPos } })
