@@ -136,9 +136,22 @@ module.exports = client => {
       const userEntry = await client.database.collection('users').findOne({ uid: uid })
       if (userEntry == null) return Promise.reject('User does not exist in database.') // eslint-disable-line prefer-promise-reject-errors
 
+      //get the collection
+      let collection = await client.game.movementCooldown.get(uid)
+
       //does user have collection map
-      if(client.game.movementCooldown){}
+      if(collection) return Promise.reject('User is not travelling.') // eslint-disable-line prefer-promise-reject-errors
+
+      //clear interval
+      clearInterval(collection.interval)
+
+      //remove the collection
+      client.game.movementCooldown.delete(uid)
+
+      //resolve
+      return Promise.resolve()
     },
+
 
     /**
       * Moves user to location
