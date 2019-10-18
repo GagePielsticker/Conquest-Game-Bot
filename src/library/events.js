@@ -13,6 +13,10 @@ module.exports = client => {
         a[b] = client.emojis.get(client.settings.bot.emojis[b])
         return a
       }, {})
+
+    client.loadMovement()
+      .then(client.log)
+      .catch(client.log)
   })
 
   /**

@@ -62,7 +62,7 @@ module.exports = client => {
     if (!cmd) return
 
     if (cmd.beta && !client.beta) return
-    
+
     if (cmd.accountCheck) {
       const account = await client.database.collection('users').findOne({ uid: message.author.id })
       if (!account) return client.sendError(message, `You don't have an account! Do \`${client.settings.bot.prefix}start\` to get started!`)
@@ -85,6 +85,27 @@ module.exports = client => {
       .setDescription(`${string}`)
     if (edit) return edit.edit(embed)
     message.channel.send(embed)
+  }
+
+  /**
+   * Loads all stored users in movement database back into live interval
+   * @returns {Promise<String>} Debug string
+   */
+  client.loadMovement = () => {
+    return new Promise((resolve, reject) => {
+      client.database.collection('movement').find({})
+        .toArray((err, users) => {
+          if (err) return reject(err)
+          const promises = users.map(x => client.game.moveUser(x.uid, x.xPos, x.yPos))
+          Promise.all(promises)
+            .then(() => {
+              resolve(`Moved ${users.length} users back into movement interval`)
+            })
+            .catch(err => {
+              reject(`Error moving movements back into movement interval; ${err}`) // eslint-disable-line prefer-promise-reject-errors
+            })
+        })
+    })
   }
 
   /**

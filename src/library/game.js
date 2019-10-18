@@ -136,22 +136,21 @@ module.exports = client => {
       const userEntry = await client.database.collection('users').findOne({ uid: uid })
       if (userEntry == null) return Promise.reject('User does not exist in database.') // eslint-disable-line prefer-promise-reject-errors
 
-      //get the collection
-      let collection = await client.game.movementCooldown.get(uid)
+      // get the collection
+      const collection = await client.game.movementCooldown.get(uid)
 
-      //does user have collection map
-      if(collection) return Promise.reject('User is not travelling.') // eslint-disable-line prefer-promise-reject-errors
+      // does user have collection map
+      if (collection) return Promise.reject('User is not travelling.') // eslint-disable-line prefer-promise-reject-errors
 
-      //clear interval
+      // clear interval
       clearInterval(collection.interval)
 
-      //remove the collection
+      // remove the collection
       client.game.movementCooldown.delete(uid)
 
-      //resolve
+      // resolve
       return Promise.resolve()
     },
-
 
     /**
       * Moves user to location
@@ -181,8 +180,8 @@ module.exports = client => {
       if (xPos > client.settings.game.map.xMax || xPos < client.settings.game.map.xMin) return Promise.reject('Invalid location.') // eslint-disable-line prefer-promise-reject-errors
       if (yPos > client.settings.game.map.yMax || yPos < client.settings.game.map.yMin) return Promise.reject('Invalid location.') // eslint-disable-line prefer-promise-reject-errors
 
-      //calculate distance to target
-      let path = finder.findPath(userEntry.xPos, userEntry.yPos, xPos, yPos, grid)
+      // calculate distance to target
+      const path = finder.findPath(userEntry.xPos, userEntry.yPos, xPos, yPos, grid)
 
       // calculate travel time to target and get tiles to target
       const travelTime = await client.game.calculateTravelTime(userEntry.xPos, userEntry.yPos, xPos, yPos)
@@ -190,18 +189,19 @@ module.exports = client => {
       const timePerCycle = Math.ceil(travelTime / travelTiles)
       let i = 0
 
-      //add user to movement database
-      client.database.collection('movement').updateOne({uid: uid}, {
+      // add user to movement database
+      client.database.collection('movement').updateOne({ uid: uid }, {
         uid: uid,
         xPos: xPos,
         yPos: yPos
-      }, {upsert: true})
+      }, { upsert: true })
 
       // add user to cooldown array and setup task
-      let movementInterval = setInterval(() => {
-        if(client.game.movementCooldown)
-        if(!path[i]) return clearInterval(movementInterval)
-        client.database.collection('users').updateOne({uid: uid}, {$set: {xPos: path[i][0], yPos: path[i][1]}})
+      const movementInterval = setInterval(() => {
+        if (client.game.movementCooldown) {
+          if (!path[i]) return clearInterval(movementInterval)
+        }
+        client.database.collection('users').updateOne({ uid: uid }, { $set: { xPos: path[i][0], yPos: path[i][1] } })
         i++
       }, timePerCycle)
 
@@ -212,13 +212,12 @@ module.exports = client => {
       })
 
       setTimeout(() => {
-
-        //clear interval
+        // clear interval
         clearInterval(movementInterval)
 
         // remove user from cooldown array and database
         client.game.movementCooldown.delete(uid)
-        client.database.collection('movement').removeOne({uid: uid})
+        client.database.collection('movement').removeOne({ uid: uid })
 
         // move user in database
         client.database.collection('users').updateOne({ uid: uid }, { $set: { xPos: xPos, yPos: yPos } })
