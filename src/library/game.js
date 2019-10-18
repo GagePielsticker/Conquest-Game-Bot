@@ -190,7 +190,7 @@ module.exports = client => {
       let i = 0
 
       // add user to movement database
-      client.database.collection('movement').updateOne({ uid: uid }, {
+      client.database.collection('movement').replaceOne({ uid: uid }, {
         uid: uid,
         xPos: xPos,
         yPos: yPos
