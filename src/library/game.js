@@ -130,6 +130,19 @@ module.exports = client => {
     /**
       * Moves user to location
       * @param {String} uid a discord user id
+      */
+    stopUser: async (uid) => {
+      // check if user exist
+      const userEntry = await client.database.collection('users').findOne({ uid: uid })
+      if (userEntry == null) return Promise.reject('User does not exist in database.') // eslint-disable-line prefer-promise-reject-errors
+
+      //does user have collection map
+      if(client.game.movementCooldown){}
+    },
+
+    /**
+      * Moves user to location
+      * @param {String} uid a discord user id
       * @param {Integer} xPos position on map grid
       * @param {Integer} yPos position on map grid
      */
@@ -164,13 +177,19 @@ module.exports = client => {
       const timePerCycle = Math.ceil(travelTime / travelTiles)
       let i = 0
 
-      // add user to cooldown array and setup task
+      //add user to movement database
+      client.database.collection('movement').insertOne({
+        uid: uid,
+        xPos: xPos,
+        yPos: yPos
+      })
 
+      // add user to cooldown array and setup task
       let movementInterval = setInterval(() => {
         if(client.game.movementCooldown)
         if(!path[i]) return clearInterval(movementInterval)
         client.database.collection('users').updateOne({uid: uid}, {$set: {xPos: path[i][0], yPos: path[i][1]}})
-        i++  
+        i++
       }, timePerCycle)
 
       client.game.movementCooldown.set(uid, {
@@ -183,9 +202,10 @@ module.exports = client => {
 
         //clear interval
         clearInterval(movementInterval)
-        
-        // remove user from cooldown array
+
+        // remove user from cooldown array and database
         client.game.movementCooldown.delete(uid)
+        client.database.collection('movement').remove({uid: uid})
 
         // move user in database
         client.database.collection('users').updateOne({ uid: uid }, { $set: { xPos: xPos, yPos: yPos } })
