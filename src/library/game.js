@@ -140,7 +140,7 @@ module.exports = client => {
       const collection = await client.game.movementCooldown.get(uid)
 
       // does user have collection map
-      if (collection) return Promise.reject('User is not travelling.') // eslint-disable-line prefer-promise-reject-errors
+      if (!collection) return Promise.reject('User is not travelling.') // eslint-disable-line prefer-promise-reject-errors
 
       // clear interval
       clearInterval(collection.interval)
