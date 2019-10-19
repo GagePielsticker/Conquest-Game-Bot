@@ -138,12 +138,14 @@ module.exports = client => {
       // clear interval
       clearInterval(collection.interval)
 
+      if (collection.timeout) clearTimeout(collection.timeout)
+
       // remove the collection
       client.game.movementCooldown.delete(uid)
 
       client.database.collection('movement').removeOne({ uid: uid })
       // resolve
-      return Promise.resolve()
+      return Promise.resolve({ xPos: userEntry.xPos, yPos: userEntry.yPos })
     },
 
     /**
@@ -156,6 +158,8 @@ module.exports = client => {
       // check if user exist
       const userEntry = await client.database.collection('users').findOne({ uid: uid })
       if (userEntry == null) return Promise.reject('User does not exist in database.') // eslint-disable-line prefer-promise-reject-errors
+
+      if (xPos === userEntry.xOis && yPos === userEntry.yPos) return Promise.reject('Already in this location') // eslint-disable-line prefer-promise-reject-errors
 
       // check if tile exist
       const entry = await client.game.getTile(xPos, yPos)
@@ -172,10 +176,9 @@ module.exports = client => {
 
       // calculate distance to target
       const path = finder.findPath(userEntry.xPos, userEntry.yPos, xPos, yPos, grid)
-
       // calculate travel time to target and get tiles to target
       const travelTime = await client.game.calculateTravelTime(userEntry.xPos, userEntry.yPos, xPos, yPos)
-      const travelTiles = path.length
+      const travelTiles = path.length || 1
       const timePerCycle = Math.ceil(travelTime / travelTiles)
       let i = 0
 
@@ -188,9 +191,9 @@ module.exports = client => {
 
       // add user to cooldown array and setup task
       const movementInterval = setInterval(() => {
-        if (!path[i]) return client.game.stopUser(uid)
-        if (client.game.movementCooldown) {
-          if (!path[i]) return clearInterval(movementInterval)
+        if (!path[i]) {
+          clearInterval(movementInterval)
+          return client.game.stopUser(uid)
         }
         client.database.collection('users').updateOne({ uid: uid }, { $set: { xPos: path[i][0], yPos: path[i][1] } })
         i++

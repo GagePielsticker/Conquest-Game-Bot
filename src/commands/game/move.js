@@ -60,13 +60,17 @@ module.exports = class MoveCommand extends Command {
                     .setDescription(`Now moving to tile: X: \`${newX}\`, Y: \`${newY}\`\n\nYou will be pinged here when you have finished moving!`)
                     .addField('Will be done in', `\`${humanizeDuration(time)}\``)
                 )
-                setTimeout(() => {
+                const timeout = setTimeout(() => {
                   message.reply(
                     this.c.em(message)
                       .setTitle('Moved!')
                       .setDescription(`Your new location is X: \`${newX}\` \`${newY}\``)
                   )
                 }, time)
+                var movementCooldown = this.c.game.movementCooldown.get(message.author.id)
+                if (!movementCooldown) return
+                movementCooldown.timeout = timeout
+                this.c.game.movementCooldown.set(message.author.id, movementCooldown)
               })
               .catch(e => this.c.sendError(message, e, msg))
           }
