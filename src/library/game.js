@@ -141,6 +141,7 @@ module.exports = client => {
       // remove the collection
       client.game.movementCooldown.delete(uid)
 
+      client.database.collection('movement').removeOne({ uid: uid })
       // resolve
       return Promise.resolve()
     },
