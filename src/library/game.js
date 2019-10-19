@@ -7,6 +7,7 @@ module.exports = client => {
   const PF = require('pathfinding')
   const grid = new PF.Grid(client.settings.game.map.xMax, client.settings.game.map.yMax)
   const finder = new PF.AStarFinder()
+  const SeedRandom = require('seedrandom')
 
   /** @namespace */
   client.game = {
@@ -59,6 +60,62 @@ module.exports = client => {
 
       // write object to database
       return client.database.collection('users').insertOne(userObject)
+    },
+
+    getTile: async (xPos, yPos) => {
+      let city = await client.database.collection('cities').findOne({ xPos: xPos, yPos: yPos })
+      const base = {
+        xPos: xPos,
+        yPos: yPos,
+        city: null,
+        hasLock: false,
+        hasWonder: false
+      }
+      const props = {
+        hasLock: 80 / 20,
+        city: 85 / 15,
+        hasWonder: 95 / 5
+      }
+      Object.keys(props)
+        .forEach(x => {
+          const isTrue = (Math.floor(SeedRandom(`x${xPos}y${yPos}${x}`)() * (props[x] - 2)) + 1) === 1
+          if (isTrue) base[x] = true
+        })
+
+      if (!city && base.city === true) {
+        city = {
+          level: 1,
+          xPos: xPos,
+          yPos: yPos,
+          inStasis: false,
+          owner: null,
+          name: nameGenerator({ words: 2 }).dashed,
+          tradeRoutes: [],
+          resources: {
+            stone: Math.floor(Math.random() * 11),
+            maxStone: 2000,
+            metal: Math.floor(Math.random() * 11),
+            maxMetal: 2000,
+            wood: Math.floor(Math.random() * 11),
+            maxWood: 2000,
+            food: Math.floor(Math.random() * 30) + 10,
+            maxFood: 3000
+          },
+          population: {
+            military: Math.floor(Math.random() * 25) + 1,
+            miners: Math.floor(Math.random() * 25) + 1,
+            workers: Math.floor(Math.random() * 25) + 1,
+            farmers: Math.floor(Math.random() * 25) + 1,
+            unemployed: 0
+          }
+        }
+
+        await client.database.collection('cities').insertOne(city)
+      }
+
+      if (base.city) base.city = city
+
+      return base
     },
 
     /**
