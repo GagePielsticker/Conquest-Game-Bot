@@ -188,6 +188,7 @@ module.exports = client => {
 
       // add user to cooldown array and setup task
       const movementInterval = setInterval(() => {
+        if (!path[i]) return client.game.stopUser(uid)
         if (client.game.movementCooldown) {
           if (!path[i]) return clearInterval(movementInterval)
         }
@@ -200,18 +201,6 @@ module.exports = client => {
         endTime: moment().unix() + travelTime,
         interval: movementInterval
       })
-
-      setTimeout(() => {
-        // clear interval
-        clearInterval(movementInterval)
-
-        // remove user from cooldown array and database
-        client.game.movementCooldown.delete(uid)
-        client.database.collection('movement').removeOne({ uid: uid })
-
-        // move user in database
-        client.database.collection('users').updateOne({ uid: uid }, { $set: { xPos: xPos, yPos: yPos } })
-      }, travelTime)
 
       // return resolve that timeout has been set
       return Promise.resolve(travelTime)
