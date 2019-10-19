@@ -71,7 +71,7 @@ module.exports = client => {
       }
       Object.keys(props)
         .forEach(x => {
-          const isTrue = (Math.floor(SeedRandom(`x${xPos}y${yPos}${x}`)() * (props[x] - 2)) + 1) === 1
+          const isTrue = (Math.floor(SeedRandom(`seedx${xPos}y${yPos}${x}`)() * (props[x] - 2)) + 1) === 1
           if (isTrue) base[x] = true
         })
 
