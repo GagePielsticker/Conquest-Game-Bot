@@ -1,7 +1,5 @@
 module.exports = client => {
   // get needed libraries
-  const Chance = require('chance')
-  const chance = new Chance()
   const moment = require('moment')
   const nameGenerator = require('project-name-generator')
   const PF = require('pathfinding')
@@ -35,12 +33,8 @@ module.exports = client => {
       const create = async () => {
         xPos = Math.floor(Math.random() * (client.settings.game.map.xMax - client.settings.game.map.xMin) + client.settings.game.map.xMin)
         yPos = Math.floor(Math.random() * (client.settings.game.map.yMax - client.settings.game.map.yMin) + client.settings.game.map.yMin)
-        mapEntry = await client.database.collection('map').findOne({ xPos: xPos, yPos: yPos })
-        if (mapEntry == null) {
-          await client.game.createTile(xPos, yPos)
-          mapEntry = await client.database.collection('map').findOne({ xPos: xPos, yPos: yPos })
-          if (mapEntry.hasLock) await create()
-        }
+        mapEntry = await client.game.getTile(xPos, yPos)
+        if (mapEntry.hasLock) await create()
       }
 
       await create()
@@ -54,7 +48,6 @@ module.exports = client => {
         empireName: null,
         flagURL: null,
         hasSettler: true,
-        cities: [],
         scoutedTiles: []
       }
 
@@ -119,69 +112,12 @@ module.exports = client => {
     },
 
     /**
-      * Creates a map tile or something idk
-      * @param {Integer} xPos position on map grid
-      * @param {Integer} yPos position on map grid
+     * Gets all users tiles
+     * @param {String} uid User's ID
+     * @returns {Array<City>} Array of cities this user owns
      */
-    createTile: async (xPos, yPos) => {
-      // check if tile exist
-      const entry = await client.database.collection('map').findOne({ xPos: xPos, yPos: yPos })
-      if (entry != null) return Promise.reject('Map tile exist in database.') // eslint-disable-line prefer-promise-reject-errors
-
-      // set default tile object
-      const mapObject = {
-        xPos: xPos,
-        yPos: yPos,
-        hasLock: false,
-        city: null,
-        hasWonder: false
-      }
-
-      // calculate if city and wonder spawns with weighted chance
-      let hasNPCCity = chance.weighted([true, false], [15, 85])
-      const hasWonder = chance.weighted([true, false], [5, 95])
-      const hasLock = chance.weighted([true, false], [20, 80])
-
-      // if tile has wonder change objects value
-      if (hasWonder) mapObject.hasWonder = true
-
-      if (hasLock) {
-        hasNPCCity = false
-        mapObject.hasLock = true
-      }
-
-      // if tile has npc city randomly generate one
-      if (hasNPCCity) {
-        mapObject.city = {
-          level: 1,
-          xPos: xPos,
-          yPos: yPos,
-          inStasis: false,
-          owner: null,
-          name: nameGenerator({ words: 2 }).dashed,
-          tradeRoutes: [],
-          resources: {
-            stone: Math.floor(Math.random() * 11),
-            maxStone: 2000,
-            metal: Math.floor(Math.random() * 11),
-            maxMetal: 2000,
-            wood: Math.floor(Math.random() * 11),
-            maxWood: 2000,
-            food: Math.floor(Math.random() * 30) + 10,
-            maxFood: 3000
-          },
-          population: {
-            military: Math.floor(Math.random() * 25) + 1,
-            miners: Math.floor(Math.random() * 25) + 1,
-            workers: Math.floor(Math.random() * 25) + 1,
-            farmers: Math.floor(Math.random() * 25) + 1,
-            unemployed: 0
-          }
-        }
-      }
-
-      // write object to database
-      return client.database.collection('map').insertOne(mapObject)
+    getUserCities: async (uid) => {
+      return client.database.collection('cities').find({ owner: uid }).toArray()
     },
 
     /**
@@ -320,7 +256,8 @@ module.exports = client => {
       if (!userEntry.hasSettler) return Promise.reject('User does not have available settler.') // eslint-disable-line prefer-promise-reject-errors
 
       // check to make sure user doesnt already have a place named that
-      if (userEntry.cities.some(x => x.name === name)) return Promise.reject('User has a city named this already.') // eslint-disable-line prefer-promise-reject-errors
+      const userCities = await client.game.getUserCities(uid)
+      if (userCities.some(x => x.name === name)) return Promise.reject('User has a city named this already.') // eslint-disable-line prefer-promise-reject-errors
 
       const cityObject = {
         level: 1,
@@ -350,11 +287,10 @@ module.exports = client => {
       }
 
       // create city in map
-      await client.database.collection('cities').updateOne({ xPos: userEntry.xPos, yPos: userEntry.yPos }, { $set: cityObject })
+      await client.database.collection('cities').insertOne(cityObject)
 
       // remove settler from user and add city to their city array
-      userEntry.cities.push(cityObject)
-      await client.database.collection('users').updateOne({ uid: uid }, { $set: { hasSettler: false, cities: userEntry.cities } })
+      await client.database.collection('users').updateOne({ uid: uid }, { $set: { hasSettler: false } })
 
       // resolve on completion
       return Promise.resolve()
@@ -410,16 +346,8 @@ module.exports = client => {
       // check if user owns city
       if (mapEntry.city.owner !== executor) return Promise.reject('User does not own city.') // eslint-disable-line prefer-promise-reject-errors
 
-      // locate user city entry and rename
-      userEntry.cities.forEach(city => {
-        if (city.xPos === xPos && city.yPos === yPos) {
-          city.name = name
-        }
-      })
-
       // rename city on map and write both to database
       await client.database.collection('cities').updateOne({ xPos: xPos, yPos: yPos }, { $set: { name: name } })
-      await client.database.collection('users').updateOne({ uid: executor }, { $set: { cities: userEntry.cities } })
 
       // resolve
       Promise.resolve()
@@ -477,21 +405,9 @@ module.exports = client => {
       // check if user can afford
       if (userEntry.gold - cost < 0) return Promise.reject('User cannot afford to level!') // eslint-disable-line prefer-promise-reject-errors
 
-      // find city in users array and update level
-      userEntry.cities.forEach(city => {
-        if (city.xPos === xPos && city.yPos === yPos) {
-          city.level++
-          city.resources.maxStone = city.level * 1.5 * 1000
-          city.resources.maxMetal += city.level * 1.5 * 1000
-          city.resources.maxWood += city.level * 1.5 * 1000
-          city.resources.maxFood += city.level * 1.5 * 1000
-        }
-      })
-
       // write changes
       await client.database.collection('users').updateOne({ uid: uid }, {
         $set: {
-          cities: userEntry.cities,
           gold: userEntry.gold - cost
         }
       })
@@ -548,19 +464,10 @@ module.exports = client => {
       if (amount <= 0) return Promise.reject('You must enter a value greater than 0.') // eslint-disable-line prefer-promise-reject-errors
       if (mapEntry.city.population[origin] - amount < 0) return Promise.reject('You do not have enough people to do this.') // eslint-disable-line prefer-promise-reject-errors
 
-      // do calculations for both map entry and user entry
-      userEntry.cities.forEach(city => {
-        if (city.xPos === xPos && city.yPos === yPos) {
-          city.population[origin] -= amount
-          city.population[target] += amount
-        }
-      })
-
       mapEntry.city.population[origin] -= amount
       mapEntry.city.population[target] += amount
 
       // write to db
-      await client.database.collection('users').updateOne({ uid: uid }, { $set: { cities: userEntry.cities } })
       await client.database.collection('cities').updateOne({ xPos: xPos, yPos: yPos }, { $set: { population: mapEntry.city.population } })
 
       return Promise.resolve()
@@ -641,19 +548,17 @@ module.exports = client => {
       const userEntry = await client.database.collection('users').findOne({ uid: uid })
       if (userEntry == null) return Promise.reject('User does not exist in database.') // eslint-disable-line prefer-promise-reject-errors
 
-      let goldGenerated = 0
-
-      // for each city
-      userEntry.cities.forEach(async cityEntry => {
-        // calculate gold creation
-        goldGenerated += Math.ceil(cityEntry.population.miners)
-      })
-
-      // add gold to user wallet
-      userEntry.gold += goldGenerated
+      const userCities = await client.game.getUserCities(uid)
 
       // write user to user database
-      await client.database.collection('users').updateOne({ uid: uid }, { $set: { gold: userEntry.gold } })
+      await client.database.collection('users').updateOne({ uid: uid }, {
+        $set:
+          {
+            gold: userEntry.gold +
+            userCities.map(x => x.population.miners)
+              .reduce((a, b) => a + b, 0)
+          }
+      })
 
       // resolve once complete
       return Promise.resolve()
@@ -669,7 +574,8 @@ module.exports = client => {
       if (userEntry == null) return Promise.reject('User does not exist in database.') // eslint-disable-line prefer-promise-reject-errors
 
       // for each city
-      userEntry.cities.forEach(async cityEntry => {
+      const userCities = client.game.getUserCities(uid)
+      userCities.forEach(async cityEntry => {
         // calculate generated food
         const generatedFood = Math.ceil(cityEntry.population.farmers * 1.5)
 
@@ -680,9 +586,6 @@ module.exports = client => {
         // write city to map database
         await client.database.collection('cities').updateOne({ xPos: cityEntry.xPos, yPos: cityEntry.yPos }, { $set: cityEntry })
       })
-
-      // write user to user database
-      await client.database.collection('users').updateOne({ uid: uid }, { $set: { cities: userEntry.cities } })
 
       // resolve once complete
       return Promise.resolve()
@@ -697,8 +600,8 @@ module.exports = client => {
       const userEntry = await client.database.collection('users').findOne({ uid: uid })
       if (userEntry == null) return Promise.reject('User does not exist in database.') // eslint-disable-line prefer-promise-reject-errors
 
-      // for each city
-      userEntry.cities.forEach(async cityEntry => {
+      const userCities = client.game.getUserCities(uid)
+      userCities.forEach(async cityEntry => {
         // calculate growth of resource
         if (cityEntry.resources.stone + cityEntry.population.workers > cityEntry.resources.maxStone) cityEntry.resources.stone = cityEntry.resources.maxStone
         else cityEntry.resources.stone += cityEntry.population.workers
@@ -713,9 +616,6 @@ module.exports = client => {
         await client.database.collection('cities').updateOne({ xPos: cityEntry.xPos, yPos: cityEntry.yPos }, { $set: cityEntry })
       })
 
-      // write user to user database
-      await client.database.collection('users').updateOne({ uid: uid }, { $set: { cities: userEntry.cities } })
-
       // resolve once complete
       return Promise.resolve()
     },
@@ -729,8 +629,8 @@ module.exports = client => {
       const userEntry = await client.database.collection('users').findOne({ uid: uid })
       if (userEntry == null) return Promise.reject('User does not exist in database.') // eslint-disable-line prefer-promise-reject-errors
 
-      // for each city
-      userEntry.cities.forEach(async cityEntry => {
+      const userCities = client.game.getUserCities(uid)
+      userCities.forEach(async cityEntry => {
         // get total population
         const totalPopulation = Object.values(cityEntry.population).reduce((a, b) => a + b, 0)
 
@@ -764,9 +664,6 @@ module.exports = client => {
         await client.database.collection('cities').updateOne({ xPos: cityEntry.xPos, yPos: cityEntry.yPos }, { $set: cityEntry })
       })
 
-      // write user to user database
-      await client.database.collection('users').updateOne({ uid: uid }, { $set: { cities: userEntry.cities } })
-
       // resolve once complete
       return Promise.resolve()
     },
@@ -781,9 +678,10 @@ module.exports = client => {
       const userEntry = await client.database.collection('users').findOne({ uid: uid })
       if (userEntry == null) return Promise.reject('User does not exist in database.') // eslint-disable-line prefer-promise-reject-errors
 
-      // loop through and grab entries
+      const userCities = await client.game.getUserCities(uid)
+
       let i = 0
-      const outputArray = userEntry.cities.map(x => {
+      const outputArray = userCities.map(x => {
         i++
         return {
           index: i,
@@ -793,7 +691,7 @@ module.exports = client => {
         .slice((pageNumber - 1) * 5, pageNumber * 5)
 
       // resolve
-      return Promise.resolve({ cities: outputArray, totalPages: Math.ceil(userEntry.cities.length / 5) })
+      return Promise.resolve({ cities: outputArray, totalPages: Math.ceil(userCities.length / 5) })
     },
 
     getLeaderboard: async (by, pageNumber) => {
@@ -811,9 +709,10 @@ module.exports = client => {
           tempList[user.uid] = user.gold
         })
       } else if (by === 'population') {
-        const users = await client.database.collection('users').find({}).toArray()
-        users.forEach(user => {
-          tempList[user.uid] = user.cities.reduce((a, b) => a + Object.values(b.population).reduce((c, d) => c + d, 0), 0)
+        const cities = (await client.database.collection('cities').find({}).toArray()).filter(x => x.owner)
+        cities.forEach(city => {
+          if (!tempList[city.owner]) tempList[city.owner] = 0
+          tempList[city.owner] += city.population.reduce((a, b) => a + Object.values(b.population).reduce((c, d) => c + d, 0), 0)
         })
       }
       const sortedList = Object.keys(tempList).sort((a, b) => {
