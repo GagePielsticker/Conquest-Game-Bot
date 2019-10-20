@@ -16,7 +16,7 @@ module.exports = class CityCommand extends Command {
     const name = args[0]
     if (!name) return this.c.sendError(message, `Missing name, do ${this.c.settings.bot.prefix}city {city-name}`)
     const mapEntry = await this.c.game.getCityByName(message.author.id, name)
-    if (!mapEntry) return this.c.sendError(message, 'Invalid city')
+    if (!mapEntry || !mapEntry.city) return this.c.sendError(message, 'Invalid city')
     message.channel.send(
       this.c.em(message)
         .setTitle(`Settings for city: ${mapEntry.city.name}`)

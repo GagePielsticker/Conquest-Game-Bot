@@ -31,7 +31,7 @@ module.exports = class GettingStartedCommand extends Command {
   async run (message, args) {
     const embed = this.c.em(message)
       .setTitle('Getting Started')
-      .setDescription(`Welcome to Conquest bot! These are a few things you'll need to play.\nBe sure to use the \`${this.c.settings.bot.prefix}help\` command.`)
+      .setDescription(`Welcome to Conquest bot and the world of Serenwyn! These are a few things you'll need to play.\nBe sure to use the \`${this.c.settings.bot.prefix}help\` command.`)
     this.subjects.forEach(x => {
       embed.addField(x.name, x.desc)
     })

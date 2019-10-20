@@ -37,7 +37,7 @@ module.exports = class SettleCommand extends Command {
               .then(() => {
                 confirmMsg.edit(
                   this.c.em(message)
-                    .setTitle(`Settled tile! Welcome ${name} to the world!`)
+                    .setTitle(`Settled tile! Welcome ${name} to the world of Serenwyn!`)
                     .setDescription(`You've successfully claimed tile: X: \`${user.xPos}\`, Y: \`${user.yPos}\``)
                 )
               })

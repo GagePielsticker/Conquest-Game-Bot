@@ -106,7 +106,7 @@ module.exports = client => {
         await client.database.collection('cities').insertOne(city)
       }
 
-      if (base.city) base.city = city
+      base.city = city || null
 
       return base
     },
@@ -736,6 +736,7 @@ module.exports = client => {
      */
     getCityByName: async (uid, name) => {
       const city = await client.database.collection('cities').findOne({ name: name, owner: uid })
+      if (!city) return null
       return client.game.getTile(city.xPos, city.yPos)
     }
   }
