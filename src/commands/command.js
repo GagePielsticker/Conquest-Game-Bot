@@ -5,6 +5,7 @@ module.exports = class Command {
     this.beta = opts.beta || false
     this.requirePermission = opts.requirePermission || null
     this.category = opts.category || 'general'
+    this.allowDuringMove = opts.allowDuringMove || false
 
     this.name = name
     this.aliases = aliases

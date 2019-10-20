@@ -5,6 +5,7 @@ module.exports = client => {
   const fs = require('fs')
   const moment = require('moment')
   const path = require('path')
+  const humanizeDuration = require('humanize-duration')
 
   /**
      * Pretty Logging Outputs
@@ -66,6 +67,22 @@ module.exports = client => {
     if (cmd.accountCheck) {
       const account = await client.database.collection('users').findOne({ uid: message.author.id })
       if (!account) return client.sendError(message, `You don't have an account! Do \`${client.settings.bot.prefix}start\` to get started!`)
+    }
+
+    if (cmd.category === 'game' && !cmd.allowDuringMove) {
+      const movement = client.game.movementCooldown.get(message.author.id)
+      if (movement) {
+        const userEntry = await client.database.collection('users').findOne({ uid: message.author.id })
+        const timeLeft = await client.game.calculateTravelTime(userEntry.xPos, userEntry.yPos, movement.xPos, movement.yPos)
+        return message.channel.send(
+          client.em(message)
+            .setTitle('You can\'t use this command while moving!')
+            .setDescription(`To stop do ${client.settings.bot.prefix}stop`)
+            .addField('Current Position', `X: \`${userEntry.xPos}\`, Y: \`${userEntry.yPos}\``, true)
+            .addField('Target Location', `X: \`${movement.xPos}\`, Y: \`${movement.yPos}\``, true)
+            .addField('Time Left', `${humanizeDuration(timeLeft)}`)
+        )
+      }
     }
 
     if (cmd.requiredPermission && !message.member.hasPermission(cmd.requiredPermission)) return

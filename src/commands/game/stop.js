@@ -6,7 +6,8 @@ module.exports = class StopCommand extends Command {
       usage: `${client.settings.bot.prefix}stop`,
       accountCheck: true,
       requiredPermission: null,
-      category: 'game'
+      category: 'game',
+      allowDuringMove: true
     })
     this.c = client
   }

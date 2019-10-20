@@ -6,7 +6,8 @@ module.exports = class CityListCommand extends Command {
       usage: `${client.settings.bot.prefix}citylist`,
       accountCheck: true,
       requiredPermission: null,
-      category: 'game'
+      category: 'game',
+      allowDuringMove: true
     })
     this.c = client
   }

@@ -202,7 +202,9 @@ module.exports = client => {
       client.game.movementCooldown.set(uid, {
         startTime: moment().unix(),
         endTime: moment().unix() + travelTime,
-        interval: movementInterval
+        interval: movementInterval,
+        xPos: xPos,
+        yPos: yPos
       })
 
       // return resolve that timeout has been set
@@ -567,7 +569,7 @@ module.exports = client => {
       if (userEntry == null) return Promise.reject('User does not exist in database.') // eslint-disable-line prefer-promise-reject-errors
 
       // for each city
-      const userCities = client.game.getUserCities(uid)
+      const userCities = await client.game.getUserCities(uid)
       userCities.forEach(async cityEntry => {
         // calculate generated food
         const generatedFood = Math.ceil(cityEntry.population.farmers * 1.5)
@@ -593,7 +595,7 @@ module.exports = client => {
       const userEntry = await client.database.collection('users').findOne({ uid: uid })
       if (userEntry == null) return Promise.reject('User does not exist in database.') // eslint-disable-line prefer-promise-reject-errors
 
-      const userCities = client.game.getUserCities(uid)
+      const userCities = await client.game.getUserCities(uid)
       userCities.forEach(async cityEntry => {
         // calculate growth of resource
         if (cityEntry.resources.stone + cityEntry.population.workers > cityEntry.resources.maxStone) cityEntry.resources.stone = cityEntry.resources.maxStone
@@ -622,7 +624,7 @@ module.exports = client => {
       const userEntry = await client.database.collection('users').findOne({ uid: uid })
       if (userEntry == null) return Promise.reject('User does not exist in database.') // eslint-disable-line prefer-promise-reject-errors
 
-      const userCities = client.game.getUserCities(uid)
+      const userCities = await client.game.getUserCities(uid)
       userCities.forEach(async cityEntry => {
         // get total population
         const totalPopulation = Object.values(cityEntry.population).reduce((a, b) => a + b, 0)

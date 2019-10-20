@@ -18,7 +18,8 @@ module.exports = class SetFlagCommand extends Command {
       usage: `${client.settings.bot.prefix}setflag {url}`,
       accountCheck: true,
       requiredPermission: null,
-      category: 'game'
+      category: 'game',
+      allowDuringMove: true
     })
     this.c = client
   }

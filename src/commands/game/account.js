@@ -6,7 +6,8 @@ module.exports = class AccountCommand extends Command {
       usage: `${client.settings.bot.prefix}account`,
       accountCheck: true,
       requiredPermission: null,
-      category: 'game'
+      category: 'game',
+      allowDuringMove: true
     })
     this.c = client
   }

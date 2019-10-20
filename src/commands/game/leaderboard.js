@@ -6,7 +6,8 @@ module.exports = class LeaderboardCommand extends Command {
       usage: `${client.settings.bot.prefix}leaderboard {subject} {page-number}`,
       accountCheck: false,
       requiredPermission: null,
-      category: 'game'
+      category: 'game',
+      allowDuringMove: true
     })
     this.c = client
   }
