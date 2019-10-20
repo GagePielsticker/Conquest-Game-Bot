@@ -38,6 +38,7 @@ module.exports = client => {
       commands = await commands
       if (!commands) return
       commands.forEach(cmd => {
+        delete require.cache[require.resolve(path.resolve(__dirname, '../commands', folder, cmd))]
         const Command = require(path.resolve(__dirname, '../commands', folder, cmd))
         client.commands.set(cmd, new Command(client))
       })
