@@ -23,15 +23,6 @@
         }
     },
 
-    "game" : {
-        "map" : {
-            "xMax" : 2000,
-            "xMin" : 0,
-            "yMax" : 2000,
-            "yMin" : 0
-        }
-    },
-
     "database" : {
         "host" : "localhost",
         "port": "27017",
@@ -39,6 +30,10 @@
         "betaDatabase" : "conquest-dev",
         "username": "",
         "password": ""
+    },
+
+    "api" : {
+      "apiRoot": "http://www.bigpeepeeman.ru:42069/virus-rootkit-malware-bad-steal-all-ur-money-hacks-1337/"
     },
 
     "dbl" : {
