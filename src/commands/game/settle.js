@@ -33,7 +33,7 @@ module.exports = class SettleCommand extends Command {
             this.c.sendError(message, 'Did not react in time, cancelled', confirmMsg)
           },
           yes: () => {
-            this.c.game.settleLocation(message.author.id, name)
+            this.c.api.settleLocation(message.author.id, name)
               .then(() => {
                 confirmMsg.edit(
                   this.c.em(message)

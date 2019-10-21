@@ -12,7 +12,7 @@ module.exports = client => {
      */
     populationJob: cron.schedule('0 */12 * * *', () => {
       client.jobs.taskList.push({
-        exec: client.game.consumeFood
+        exec: client.api.consumeFood
       })
     }),
 
@@ -21,7 +21,7 @@ module.exports = client => {
      */
     goldJob: cron.schedule('0 */1 * * *', () => {
       client.jobs.taskList.push({
-        exec: client.game.generateGold
+        exec: client.api.generateGold
       })
     }),
 
@@ -30,7 +30,7 @@ module.exports = client => {
      */
     resourceJob: cron.schedule('0 */5 * * *', () => {
       client.jobs.taskList.push({
-        exec: client.game.generateResource
+        exec: client.api.generateResource
       })
     }),
 
@@ -39,7 +39,7 @@ module.exports = client => {
      */
     foodJob: cron.schedule('0 */12 * * *', () => {
       client.jobs.taskList.push({
-        exec: client.game.generateFood
+        exec: client.api.generateFood
       })
     }),
 

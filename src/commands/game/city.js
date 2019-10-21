@@ -15,7 +15,7 @@ module.exports = class CityCommand extends Command {
   async run (message, args) {
     const name = args[0]
     if (!name) return this.c.sendError(message, `Missing name, do ${this.c.settings.bot.prefix}city {city-name}`)
-    const mapEntry = await this.c.game.getCityByName(message.author.id, name)
+    const mapEntry = await this.c.api.getCityByName(message.author.id, name)
     if (!mapEntry || !mapEntry.city) return this.c.sendError(message, 'Invalid city')
     message.channel.send(
       this.c.em(message)
@@ -64,7 +64,7 @@ module.exports = class CityCommand extends Command {
                 let newName = await this.c.messageMenu(message, msg)
                 if (!newName) return
                 newName = newName.split(' ')[0]
-                this.c.game.setCityName(message.author.id, mapEntry.xPos, mapEntry.yPos, newName)
+                this.c.api.setCityName(message.author.id, mapEntry.xPos, mapEntry.yPos, newName)
                   .then(() => {
                     msg.edit(
                       this.c.em(message)
@@ -128,7 +128,7 @@ module.exports = class CityCommand extends Command {
                           this.c.sendError(message, 'Ran out of time, cancelled', msg)
                         },
                         yes: () => {
-                          this.c.game.changePopulationJob(message.author.id, mapEntry.xPos, mapEntry.yPos, populationFrom, populationTo, amountToMove)
+                          this.c.api.changePopulationJob(message.author.id, mapEntry.xPos, mapEntry.yPos, populationFrom, populationTo, amountToMove)
                             .then(() => {
                               msg.edit(
                                 this.c.em(message)
@@ -148,7 +148,7 @@ module.exports = class CityCommand extends Command {
           {
             emoji: '4⃣',
             fn: async () => {
-              const amountToLevelUp = await this.c.game.calculateLevelCost(mapEntry.city.level)
+              const amountToLevelUp = await this.c.api.calculateLevelCost(mapEntry.city.level)
               msg.edit(
                 this.c.em(message)
                   .setTitle(`Level up ${mapEntry.city.name}`)
@@ -166,7 +166,7 @@ module.exports = class CityCommand extends Command {
                       this.c.sendError(message, 'Ran out of time, cancelled', msg)
                     },
                     yes: () => {
-                      this.c.game.levelCity(message.author.id, mapEntry.xPos, mapEntry.yPos)
+                      this.c.api.levelCity(message.author.id, mapEntry.xPos, mapEntry.yPos)
                         .then(() => {
                           msg.edit(
                             this.c.em(message)

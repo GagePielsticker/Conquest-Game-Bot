@@ -13,7 +13,7 @@ module.exports = class StopCommand extends Command {
   }
 
   async run (message, args) {
-    this.c.game.stopUser(message.author.id)
+    this.c.api.stopUser(message.author.id)
       .then((res) => {
         const { xPos, yPos } = res
         message.channel.send(

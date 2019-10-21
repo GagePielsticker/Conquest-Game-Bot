@@ -14,7 +14,7 @@ module.exports = class MoveCommand extends Command {
   }
 
   async run (message, args) {
-    const cooldown = this.c.game.movementCooldown.has(message.author.id)
+    const cooldown = this.c.api.movementCooldown.has(message.author.id)
     if (cooldown) return this.c.sendError(message, `You're already moving, wait ${humanizeDuration(cooldown.endTime - moment().unix())}`)
 
     let { 0: newX, 1: newY } = args
@@ -27,7 +27,7 @@ module.exports = class MoveCommand extends Command {
     newY = Number(newY)
 
     const user = await this.c.database.collection('users').findOne({ uid: message.author.id })
-    const timeToMove = await this.c.game.calculateTravelTime(user.xPos, user.yPos, newX, newY)
+    const timeToMove = await this.c.api.calculateTravelTime(user.xPos, user.yPos, newX, newY)
 
     message.channel.send(
       this.c.em(message)
@@ -51,7 +51,7 @@ module.exports = class MoveCommand extends Command {
             this.c.sendError(message, 'Ran out of time, cancelled', msg)
           },
           yes: () => {
-            this.c.game.moveUser(message.author.id, newX, newY)
+            this.c.api.moveUser(message.author.id, newX, newY)
               .then((time) => {
                 if (message.content.match(/-d/) && this.c.dev) time = 1000
                 msg.edit(
@@ -67,10 +67,10 @@ module.exports = class MoveCommand extends Command {
                       .setDescription(`Your new location is X: \`${newX}\` \`${newY}\``)
                   )
                 }, time)
-                var movementCooldown = this.c.game.movementCooldown.get(message.author.id)
+                var movementCooldown = this.c.api.movementCooldown.get(message.author.id)
                 if (!movementCooldown) return
                 movementCooldown.timeout = timeout
-                this.c.game.movementCooldown.set(message.author.id, movementCooldown)
+                this.c.api.movementCooldown.set(message.author.id, movementCooldown)
               })
               .catch(e => this.c.sendError(message, e, msg))
           }

@@ -30,7 +30,7 @@ module.exports = class SetFlagCommand extends Command {
     if (!validURL(flag)) return this.c.sendError(message, 'Malformed URL')
     const split = flag.split('.')
     if (!imageTypes.includes(split[split.length - 1])) return this.c.sendError(message, 'Invalid image type')
-    this.c.game.setFlag(message.author.id, flag)
+    this.c.api.setFlag(message.author.id, flag)
       .then(() => {
         message.channel.send(
           this.c.em(message)
