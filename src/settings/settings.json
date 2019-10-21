@@ -33,7 +33,7 @@
     },
 
     "api" : {
-      "apiRoot": "http://www.bigpeepeeman.ru:42069/virus-rootkit-malware-bad-steal-all-ur-money-hacks-1337/"
+      "apiRoot": "http://localhost:3000/api"
     },
 
     "dbl" : {

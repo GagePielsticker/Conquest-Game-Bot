@@ -17,7 +17,6 @@ module.exports = client => {
    * Dependencies
    */
   const fetch = require('node-fetch')
-  const settings = client.settings.api
 
   /**
    * Call the remote API
@@ -25,12 +24,19 @@ module.exports = client => {
    * @param {Object} options node-fetch options
    * @returns {Response} Returns JSON response
    */
-  function callAPI (url, options) {
+  function callAPI (url, method, body, user) {
     return new Promise((resolve, reject) => {
     /**
      * Make API request
      */
-      fetch(url, options)
+      fetch(client.settings.api.apiRoot + url, {
+        method: method || 'GET',
+        body: body ? JSON.stringify(body) : null,
+        headers: {
+          'Content-Type': 'application/json',
+          user: user || undefined
+        }
+      })
         .then(checkStatus)
         .then(res => res.json())
         .then(json => {
@@ -57,7 +63,7 @@ module.exports = client => {
      * @returns {Promise<User>} User Information
      */
     createUser: (uid) => {
-      return callAPI(`${settings.apiRoot}/users/${uid}`, { method: 'PUT' })
+      return callAPI(`/users/${uid}`, 'PUT')
     },
 
     /**
@@ -67,7 +73,7 @@ module.exports = client => {
      * @returns {Promise<Tile>} Tile Information
      */
     getTile: (xPos, yPos) => {
-      return callAPI(`${settings.apiRoot}/tiles/${xPos}/${yPos}`, { method: 'GET' })
+      return callAPI(`/tiles/${xPos}/${yPos}`, 'GET')
     },
 
     /**
@@ -76,7 +82,7 @@ module.exports = client => {
        * @returns {Promise<Array<City>>} Array of cities this user owns
        */
     getUserCities: (uid) => {
-      return callAPI(`${settings.apiRoot}/users/${uid}/cities`, { method: 'GET' })
+      return callAPI(`/users/${uid}/cities`, 'GET')
     },
 
     /**
@@ -87,7 +93,7 @@ module.exports = client => {
     * @returns {Object.yPos} User's current Y position
     */
     stopUser: (uid) => {
-      return callAPI(`${settings.apiRoot}/users/${uid}/move/stop`, { method: 'POST' })
+      return callAPI(`/users/${uid}/move/stop`, 'POST')
     },
 
     /**
@@ -98,7 +104,7 @@ module.exports = client => {
     * @returns {Integer} Time of travel in ms
     */
     moveUser: (uid, xPos, yPos) => {
-      return callAPI(`${settings.apiRoot}/users/${uid}/move/${xPos}/${yPos}`, { method: 'POST' })
+      return callAPI(`/users/${uid}/move/${xPos}/${yPos}`, 'POST')
     },
 
     /**
@@ -109,19 +115,8 @@ module.exports = client => {
     * @param {Integer} y2 position on map grid
     * @returns {Promise<Integer>} in ms
     */
-    calculateTravelTime: (x1, y1, x2, y2) => {
-      return new Promise((resolve) => {
-        // distance formula from user to target
-        const a = x1 - x2
-        const b = y1 - y2
-        const distance = Math.sqrt(a * a + b * b)
-
-        // calculate time from distance
-        const time = distance * 10
-
-        // return time in milleseconds
-        resolve(Math.floor(time * 1000))
-      })
+    calculateTravelTime: async (x1, y1, x2, y2) => {
+      return (await (callAPI(`/tiles/${x1}/${y1}/time/${x2}/${y2}`, 'GET'))).time
     },
 
     /**
@@ -131,6 +126,7 @@ module.exports = client => {
     * @returns {City} City object
     */
     settleLocation: (uid, name) => {
+      return callAPI(`/users/${uid}/cities`, 'POST', { name: name })
     },
 
     /**
@@ -140,7 +136,7 @@ module.exports = client => {
      * @param {Integer} yPos position map
      */
     destroyCity: (uid, xPos, yPos) => {
-      return callAPI(`${settings.apiRoot}/cities/${xPos}/${yPos}`, { method: 'POST', headers: { user: uid } })
+      return callAPI(`/cities/${xPos}/${yPos}`, 'DELETE', null, uid)
     },
 
     /**
@@ -149,7 +145,7 @@ module.exports = client => {
     * @param {String} url valid image url
     */
     setFlag: (uid, url) => {
-      return callAPI(`${settings.apiRoot}/users/${uid}/flag`, { method: 'POST', body: { flagURL: url } })
+      return callAPI(`/users/${uid}/flag`, 'POST', { flagURL: url })
     },
 
     /**
@@ -158,7 +154,7 @@ module.exports = client => {
         * @param {String} empireName name of empire
        */
     setEmpireName: (uid, empireName) => {
-      return callAPI(`${settings.apiRoot}/users/${uid}/empire/name`, { method: 'POST', body: { name: empireName } })
+      return callAPI(`/users/${uid}/empire/name`, 'POST', { name: empireName })
     },
 
     /**
@@ -169,36 +165,23 @@ module.exports = client => {
     * @param {String} name name of city
     */
     setCityName: (executor, xPos, yPos, name) => {
-      return callAPI(`${settings.apiRoot}/cities/${xPos}/${yPos}/name`, { method: 'POST', body: { name: name }, headers: { user: executor } })
+      return callAPI(`/cities/${xPos}/${yPos}/name`, 'POST', { name: name }, executor)
     },
 
     /**
         * Calculates next city level cost
         * @param {Integer} currentLevel the current level of what you want to check
        */
-    calculateLevelCost: (currentLevel) => {
-      return new Promise((resolve, reject) => {
-        // formula is (3760.60309(1.63068)^x) with x being level
-        const power = Math.pow(1.63068, currentLevel + 1)
-        const cost = Math.floor(3760.60309 * power)
-
-        // resolve cost
-        resolve(cost)
-      })
+    calculateLevelCost: async (currentLevel) => {
+      return (await (callAPI(`/cities/level/${currentLevel}`, 'GET'))).cost
     },
 
     /**
     * Calculates next city max population @ level
     * @param {Integer} level the level to run calculation with
     */
-    calculateMaxPopulation: (level) => {
-      return new Promise((resolve, reject) => {
-        // calculate max population
-        const maxPop = level * 1000
-
-        // return cost
-        resolve(maxPop)
-      })
+    calculateMaxPopulation: async (level) => {
+      return (await (callAPI(`/cities/maxpop/${level}`, 'GET'))).cost
     },
 
     /**
@@ -208,7 +191,7 @@ module.exports = client => {
      * @param {Integer} yPos position on map grid
      */
     levelCity: (uid, xPos, yPos) => {
-      return callAPI(`${settings.apiRoot}/cities/${xPos}/${yPos}/level`, { method: 'POST', headers: { user: uid } })
+      return callAPI(`/cities/${xPos}/${yPos}/level`, 'POST', null, uid)
     },
 
     /**
@@ -221,7 +204,7 @@ module.exports = client => {
      * @param {Integer} amount amount to transition
      */
     changePopulationJob: (uid, xPos, yPos, origin, target, amount) => {
-      return callAPI(`${settings.apiRoot}/cities/${xPos}/${yPos}/population`, { method: 'POST', body: { from: origin, to: target, amount: amount }, headers: { user: uid } })
+      return callAPI(`/cities/${xPos}/${yPos}/population`, 'POST', { from: origin, to: target, amount: amount }, uid)
     },
 
     /**
@@ -229,7 +212,7 @@ module.exports = client => {
      * @param {Snowflake} uid discord id
      */
     calculateScoutTime: (uid) => {
-      return callAPI(`${settings.apiRoot}/users/${uid}/scout`, { method: 'GET' })
+      return callAPI(`/users/${uid}/scout`, 'GET')
     },
 
     /**
@@ -237,7 +220,7 @@ module.exports = client => {
      * @param {Snowflake} uid a discord user id
      */
     scoutTile: (uid) => {
-      return callAPI(`${settings.apiRoot}/users/${uid}/scout`, { method: 'POST' })
+      return callAPI(`/users/${uid}/scout`, 'POST')
     },
 
     /**
@@ -246,6 +229,7 @@ module.exports = client => {
      * @param {Integer} pageNumber
      */
     getUserCityNames: (uid, pageNumber) => {
+      return callAPI(`/users/${uid}/cities/names?page=${pageNumber || 1}`, 'GET')
     },
 
     getLeaderboard: (by, pageNumber) => {
@@ -256,7 +240,10 @@ module.exports = client => {
      * @param {Snowflake} uid
      * @param {String} name
      */
-    getCityByName: (uid, name) => {
+    getCityByName: async (uid, name) => {
+      const cities = client.api.getUserCities(uid)
+      const city = cities.find(x => x.name.toLowerCase() === name.toLowerCase())
+      return city || null
     },
 
     /**
@@ -265,7 +252,7 @@ module.exports = client => {
      * @param {String} name alliance name
      */
     createAlliance: (uid, name) => {
-      return callAPI(`${settings.apiRoot}/alliances`, { method: 'PUT', body: { name: name }, headers: { user: uid } })
+      return callAPI('/alliances', 'PUT', { name: name }, uid)
     },
 
     /**
@@ -274,7 +261,7 @@ module.exports = client => {
      * @param {String} name alliance name
      */
     applyToAlliance: (uid, name) => {
-      return callAPI(`${settings.apiRoot}/apply`, { method: 'PUT', body: { name: name }, headers: { user: uid } })
+      return callAPI('/alliances/apply', 'PUT', { name: name }, uid)
     },
 
     /**
@@ -283,7 +270,7 @@ module.exports = client => {
      * @param {String} name alliance name
      */
     cancelAllianceApplication: (uid, name) => {
-      return callAPI(`${settings.apiRoot}/apply`, { method: 'DELETE', body: { name: name }, headers: { user: uid } })
+      return callAPI('/alliances/apply', 'DELETE', { name: name }, uid)
     },
 
     /**
@@ -292,7 +279,7 @@ module.exports = client => {
      * @param {Snowflake} target
      */
     acceptToAlliance: (uid, target) => {
-      return callAPI(`${settings.apiRoot}/apply/accept/${target}`, { method: 'POST', headers: { user: uid } })
+      return callAPI(`/alliances/apply/accept/${target}`, 'POST', uid)
     },
 
     /**
@@ -301,7 +288,7 @@ module.exports = client => {
      * @param {Snowflake} target
      */
     denyFromAlliance: (uid, target) => {
-      return callAPI(`${settings.apiRoot}/apply/deny/${target}`, { method: 'POST', headers: { user: uid } })
+      return callAPI(`/alliances/apply/deny/${target}`, 'POST', uid)
     },
 
     /**
@@ -309,7 +296,7 @@ module.exports = client => {
      * @param {Snowflake} uid
      */
     getAlliance: (uid) => {
-      return callAPI(`${settings.apiRoot}/users/${uid}/alliance`, { method: 'GET' })
+      return callAPI(`/users/${uid}/alliance`, 'GET')
     },
 
     /**
@@ -317,7 +304,7 @@ module.exports = client => {
      * @param {Snowflake} uid
      */
     leaveAlliance: (uid) => {
-      return callAPI(`${settings.apiRoot}/users/${uid}/alliance`, { method: 'DELETE' })
+      return callAPI(`/users/${uid}/alliance`, 'DELETE')
     }
   }
 }
