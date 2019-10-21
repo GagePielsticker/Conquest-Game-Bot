@@ -19,6 +19,29 @@ module.exports = client => {
   const fetch = require('node-fetch')
   const settings = client.settings.api
 
+  /**
+   * Call the remote API
+   * @param {String} url URL to remote API
+   * @param {Object} options node-fetch options
+   * @returns {Response} Returns JSON response
+   */
+  function callAPI (url, options) {
+    return new Promise((resolve, reject) => {
+    /**
+     * Make API request
+     */
+      fetch(url, options)
+        .then(checkStatus)
+        .then(res => res.json())
+        .then(json => {
+          resolve(json)
+        })
+        .catch(err => {
+          reject(err)
+        })
+    })
+  }
+
   /** @namespace */
   client.api = {
 
@@ -34,20 +57,7 @@ module.exports = client => {
      * @returns {Promise<User>} User Information
      */
     createUser: (uid) => {
-      return new Promise((resolve, reject) => {
-        /**
-         * Make API request
-         */
-        fetch(`${settings.apiRoot}/users/${uid}`, { method: 'PUT' })
-          .then(checkStatus)
-          .then(res => res.json())
-          .then(json => {
-            resolve(json)
-          })
-          .catch(err => {
-            reject(err)
-          })
-      })
+      return callAPI(`${settings.apiRoot}/users/${uid}`, { method: 'PUT' })
     },
 
     /**
@@ -57,20 +67,7 @@ module.exports = client => {
      * @returns {Promise<Tile>} Tile Information
      */
     getTile: (xPos, yPos) => {
-      return new Promise((resolve, reject) => {
-        /**
-         * Make API request
-         */
-        fetch(`${settings.apiRoot}/tiles/${xPos}/${yPos}`, { method: 'GET' })
-          .then(checkStatus)
-          .then(res => res.json())
-          .then(json => {
-            resolve(json)
-          })
-          .catch(err => {
-            reject(err)
-          })
-      })
+      return callAPI(`${settings.apiRoot}/tiles/${xPos}/${yPos}`, { method: 'GET' })
     },
 
     /**
@@ -79,20 +76,7 @@ module.exports = client => {
        * @returns {Promise<Array<City>>} Array of cities this user owns
        */
     getUserCities: (uid) => {
-      return new Promise((resolve, reject) => {
-        /**
-         * Make API request
-         */
-        fetch(`${settings.apiRoot}/users/${uid}/cities`, { method: 'GET' })
-          .then(checkStatus)
-          .then(res => res.json())
-          .then(json => {
-            resolve(json)
-          })
-          .catch(err => {
-            reject(err)
-          })
-      })
+      return callAPI(`${settings.apiRoot}/users/${uid}/cities`, { method: 'GET' })
     },
 
     /**
@@ -103,20 +87,7 @@ module.exports = client => {
     * @returns {Object.yPos} User's current Y position
     */
     stopUser: (uid) => {
-      return new Promise((resolve, reject) => {
-        /**
-         * Make API request
-         */
-        fetch(`${settings.apiRoot}/users/${uid}/move/stop`, { method: 'POST' })
-          .then(checkStatus)
-          .then(res => res.json())
-          .then(json => {
-            resolve(json)
-          })
-          .catch(err => {
-            reject(err)
-          })
-      })
+      return callAPI(`${settings.apiRoot}/users/${uid}/move/stop`, { method: 'POST' })
     },
 
     /**
@@ -127,20 +98,7 @@ module.exports = client => {
     * @returns {Integer} Time of travel in ms
     */
     moveUser: (uid, xPos, yPos) => {
-      return new Promise((resolve, reject) => {
-        /**
-         * Make API request
-         */
-        fetch(`${settings.apiRoot}/users/${uid}/move/${xPos}/${yPos}`, { method: 'POST' })
-          .then(checkStatus)
-          .then(res => res.json())
-          .then(json => {
-            resolve(json)
-          })
-          .catch(err => {
-            reject(err)
-          })
-      })
+      return callAPI(`${settings.apiRoot}/users/${uid}/move/${xPos}/${yPos}`, { method: 'POST' })
     },
 
     /**
@@ -182,20 +140,7 @@ module.exports = client => {
      * @param {Integer} yPos position map
      */
     destroyCity: (uid, xPos, yPos) => {
-      return new Promise((resolve, reject) => {
-        /**
-         * Make API request
-         */
-        fetch(`${settings.apiRoot}/cities/${xPos}/${yPos}`, { method: 'POST', headers: { user: uid } })
-          .then(checkStatus)
-          .then(res => res.json())
-          .then(json => {
-            resolve(json)
-          })
-          .catch(err => {
-            reject(err)
-          })
-      })
+      return callAPI(`${settings.apiRoot}/cities/${xPos}/${yPos}`, { method: 'POST', headers: { user: uid } })
     },
 
     /**
@@ -204,20 +149,7 @@ module.exports = client => {
     * @param {String} url valid image url
     */
     setFlag: (uid, url) => {
-      return new Promise((resolve, reject) => {
-        /**
-         * Make API request
-         */
-        fetch(`${settings.apiRoot}/users/${uid}/flag`, { method: 'POST', body: { flagURL: url } })
-          .then(checkStatus)
-          .then(res => res.json())
-          .then(json => {
-            resolve(json)
-          })
-          .catch(err => {
-            reject(err)
-          })
-      })
+      return callAPI(`${settings.apiRoot}/users/${uid}/flag`, { method: 'POST', body: { flagURL: url } })
     },
 
     /**
@@ -226,20 +158,7 @@ module.exports = client => {
         * @param {String} empireName name of empire
        */
     setEmpireName: (uid, empireName) => {
-      return new Promise((resolve, reject) => {
-        /**
-         * Make API request
-         */
-        fetch(`${settings.apiRoot}/users/${uid}/empire/name`, { method: 'POST', body: { name: empireName } })
-          .then(checkStatus)
-          .then(res => res.json())
-          .then(json => {
-            resolve(json)
-          })
-          .catch(err => {
-            reject(err)
-          })
-      })
+      return callAPI(`${settings.apiRoot}/users/${uid}/empire/name`, { method: 'POST', body: { name: empireName } })
     },
 
     /**
@@ -250,20 +169,7 @@ module.exports = client => {
     * @param {String} name name of city
     */
     setCityName: (executor, xPos, yPos, name) => {
-      return new Promise((resolve, reject) => {
-        /**
-         * Make API request
-         */
-        fetch(`${settings.apiRoot}/cities/${xPos}/${yPos}/name`, { method: 'POST', body: { name: name }, headers: { user: executor } })
-          .then(checkStatus)
-          .then(res => res.json())
-          .then(json => {
-            resolve(json)
-          })
-          .catch(err => {
-            reject(err)
-          })
-      })
+      return callAPI(`${settings.apiRoot}/cities/${xPos}/${yPos}/name`, { method: 'POST', body: { name: name }, headers: { user: executor } })
     },
 
     /**
@@ -302,20 +208,7 @@ module.exports = client => {
      * @param {Integer} yPos position on map grid
      */
     levelCity: (uid, xPos, yPos) => {
-      return new Promise((resolve, reject) => {
-        /**
-         * Make API request
-         */
-        fetch(`${settings.apiRoot}/cities/${xPos}/${yPos}/level`, { method: 'POST', headers: { user: uid } })
-          .then(checkStatus)
-          .then(res => res.json())
-          .then(json => {
-            resolve(json)
-          })
-          .catch(err => {
-            reject(err)
-          })
-      })
+      return callAPI(`${settings.apiRoot}/cities/${xPos}/${yPos}/level`, { method: 'POST', headers: { user: uid } })
     },
 
     /**
@@ -328,20 +221,7 @@ module.exports = client => {
      * @param {Integer} amount amount to transition
      */
     changePopulationJob: (uid, xPos, yPos, origin, target, amount) => {
-      return new Promise((resolve, reject) => {
-        /**
-         * Make API request
-         */
-        fetch(`${settings.apiRoot}/cities/${xPos}/${yPos}/population`, { method: 'POST', body: { from: origin, to: target, amount: amount }, headers: { user: uid } })
-          .then(checkStatus)
-          .then(res => res.json())
-          .then(json => {
-            resolve(json)
-          })
-          .catch(err => {
-            reject(err)
-          })
-      })
+      return callAPI(`${settings.apiRoot}/cities/${xPos}/${yPos}/population`, { method: 'POST', body: { from: origin, to: target, amount: amount }, headers: { user: uid } })
     },
 
     /**
@@ -349,20 +229,7 @@ module.exports = client => {
      * @param {Snowflake} uid discord id
      */
     calculateScoutTime: (uid) => {
-      return new Promise((resolve, reject) => {
-        /**
-         * Make API request
-         */
-        fetch(`${settings.apiRoot}/users/${uid}/scout`, { method: 'GET' })
-          .then(checkStatus)
-          .then(res => res.json())
-          .then(json => {
-            resolve(json)
-          })
-          .catch(err => {
-            reject(err)
-          })
-      })
+      return callAPI(`${settings.apiRoot}/users/${uid}/scout`, { method: 'GET' })
     },
 
     /**
@@ -370,20 +237,7 @@ module.exports = client => {
      * @param {Snowflake} uid a discord user id
      */
     scoutTile: (uid) => {
-      return new Promise((resolve, reject) => {
-        /**
-         * Make API request
-         */
-        fetch(`${settings.apiRoot}/users/${uid}/scout`, { method: 'POST' })
-          .then(checkStatus)
-          .then(res => res.json())
-          .then(json => {
-            resolve(json)
-          })
-          .catch(err => {
-            reject(err)
-          })
-      })
+      return callAPI(`${settings.apiRoot}/users/${uid}/scout`, { method: 'POST' })
     },
 
     /**
@@ -411,20 +265,7 @@ module.exports = client => {
      * @param {String} name alliance name
      */
     createAlliance: (uid, name) => {
-      return new Promise((resolve, reject) => {
-        /**
-         * Make API request
-         */
-        fetch(`${settings.apiRoot}/alliances`, { method: 'PUT', body: { name: name }, headers: { user: uid } })
-          .then(checkStatus)
-          .then(res => res.json())
-          .then(json => {
-            resolve(json)
-          })
-          .catch(err => {
-            reject(err)
-          })
-      })
+      return callAPI(`${settings.apiRoot}/alliances`, { method: 'PUT', body: { name: name }, headers: { user: uid } })
     },
 
     /**
@@ -433,20 +274,7 @@ module.exports = client => {
      * @param {String} name alliance name
      */
     applyToAlliance: (uid, name) => {
-      return new Promise((resolve, reject) => {
-        /**
-         * Make API request
-         */
-        fetch(`${settings.apiRoot}/apply`, { method: 'PUT', body: { name: name }, headers: { user: uid } })
-          .then(checkStatus)
-          .then(res => res.json())
-          .then(json => {
-            resolve(json)
-          })
-          .catch(err => {
-            reject(err)
-          })
-      })
+      return callAPI(`${settings.apiRoot}/apply`, { method: 'PUT', body: { name: name }, headers: { user: uid } })
     },
 
     /**
@@ -455,20 +283,7 @@ module.exports = client => {
      * @param {String} name alliance name
      */
     cancelAllianceApplication: (uid, name) => {
-      return new Promise((resolve, reject) => {
-        /**
-         * Make API request
-         */
-        fetch(`${settings.apiRoot}/apply`, { method: 'DELETE', body: { name: name }, headers: { user: uid } })
-          .then(checkStatus)
-          .then(res => res.json())
-          .then(json => {
-            resolve(json)
-          })
-          .catch(err => {
-            reject(err)
-          })
-      })
+      return callAPI(`${settings.apiRoot}/apply`, { method: 'DELETE', body: { name: name }, headers: { user: uid } })
     },
 
     /**
@@ -477,20 +292,7 @@ module.exports = client => {
      * @param {Snowflake} target
      */
     acceptToAlliance: (uid, target) => {
-      return new Promise((resolve, reject) => {
-        /**
-         * Make API request
-         */
-        fetch(`${settings.apiRoot}/apply/accept/${target}`, { method: 'POST', headers: { user: uid } })
-          .then(checkStatus)
-          .then(res => res.json())
-          .then(json => {
-            resolve(json)
-          })
-          .catch(err => {
-            reject(err)
-          })
-      })
+      return callAPI(`${settings.apiRoot}/apply/accept/${target}`, { method: 'POST', headers: { user: uid } })
     },
 
     /**
@@ -499,20 +301,7 @@ module.exports = client => {
      * @param {Snowflake} target
      */
     denyFromAlliance: (uid, target) => {
-      return new Promise((resolve, reject) => {
-        /**
-         * Make API request
-         */
-        fetch(`${settings.apiRoot}/apply/deny/${target}`, { method: 'POST', headers: { user: uid } })
-          .then(checkStatus)
-          .then(res => res.json())
-          .then(json => {
-            resolve(json)
-          })
-          .catch(err => {
-            reject(err)
-          })
-      })
+      return callAPI(`${settings.apiRoot}/apply/deny/${target}`, { method: 'POST', headers: { user: uid } })
     },
 
     /**
@@ -520,20 +309,7 @@ module.exports = client => {
      * @param {Snowflake} uid
      */
     getAlliance: (uid) => {
-      return new Promise((resolve, reject) => {
-        /**
-         * Make API request
-         */
-        fetch(`${settings.apiRoot}/users/${uid}/alliance`, { method: 'GET' })
-          .then(checkStatus)
-          .then(res => res.json())
-          .then(json => {
-            resolve(json)
-          })
-          .catch(err => {
-            reject(err)
-          })
-      })
+      return callAPI(`${settings.apiRoot}/users/${uid}/alliance`, { method: 'GET' })
     },
 
     /**
@@ -541,20 +317,7 @@ module.exports = client => {
      * @param {Snowflake} uid
      */
     leaveAlliance: (uid) => {
-      return new Promise((resolve, reject) => {
-        /**
-         * Make API request
-         */
-        fetch(`${settings.apiRoot}/users/${uid}/alliance`, { method: 'DELETE' })
-          .then(checkStatus)
-          .then(res => res.json())
-          .then(json => {
-            resolve(json)
-          })
-          .catch(err => {
-            reject(err)
-          })
-      })
+      return callAPI(`${settings.apiRoot}/users/${uid}/alliance`, { method: 'DELETE' })
     }
   }
 }
