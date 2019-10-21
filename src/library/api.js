@@ -40,6 +40,7 @@ module.exports = client => {
         .then(checkStatus)
         .then(res => res.json())
         .then(json => {
+          if (json.error) reject(json.error)
           resolve(json)
         })
         .catch(err => {
@@ -108,6 +109,12 @@ module.exports = client => {
     */
     moveUser: async (uid, xPos, yPos) => {
       return (await (callAPI(`/users/${uid}/move/${xPos}/${yPos}`, 'POST'))).time
+    },
+
+    isMoving: async (uid) => {
+      const moving = await callAPI(`/users/${uid}/move`, 'GET')
+      if (!moving.moving) return false
+      return moving.data
     },
 
     /**

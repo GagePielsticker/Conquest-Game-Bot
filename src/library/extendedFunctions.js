@@ -71,7 +71,7 @@ module.exports = client => {
     }
 
     if (cmd.category === 'game' && !cmd.allowDuringMove) {
-      const movement = client.game.movementCooldown.get(message.author.id)
+      const movement = await client.game.isMoving(message.author.id)
       if (movement) {
         const userEntry = await client.database.collection('users').findOne({ uid: message.author.id })
         const timeLeft = await client.game.calculateTravelTime(userEntry.xPos, userEntry.yPos, movement.xPos, movement.yPos)
