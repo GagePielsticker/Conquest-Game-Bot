@@ -18,7 +18,7 @@ module.exports = class LeaderboardCommand extends Command {
     if (isNaN(page)) return this.c.sendError(message, 'Invalid page number')
     page = Number(page)
     if (!['gold', 'city', 'population'].includes(subject)) return this.c.sendError(message, 'Invalid subject. Subjects; `gold`, `city`, `population`')
-    this.c.api.getLeaderboard(subject, page)
+    this.c.game.getLeaderboard(subject, page)
       .then(response => {
         const { leaderboard, totalPages } = response
         if (page > totalPages) return this.c.sendError(message, `Invalid page, max pages: ${totalPages}`)

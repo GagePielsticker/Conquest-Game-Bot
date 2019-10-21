@@ -71,10 +71,10 @@ module.exports = client => {
     }
 
     if (cmd.category === 'game' && !cmd.allowDuringMove) {
-      const movement = client.api.movementCooldown.get(message.author.id)
+      const movement = client.game.movementCooldown.get(message.author.id)
       if (movement) {
         const userEntry = await client.database.collection('users').findOne({ uid: message.author.id })
-        const timeLeft = await client.api.calculateTravelTime(userEntry.xPos, userEntry.yPos, movement.xPos, movement.yPos)
+        const timeLeft = await client.game.calculateTravelTime(userEntry.xPos, userEntry.yPos, movement.xPos, movement.yPos)
         return message.channel.send(
           client.em(message)
             .setTitle('You can\'t use this command while moving!')
@@ -114,7 +114,7 @@ module.exports = client => {
       client.database.collection('movement').find({})
         .toArray((err, users) => {
           if (err) return reject(err)
-          const promises = users.map(x => client.api.moveUser(x.uid, x.xPos, x.yPos))
+          const promises = users.map(x => client.game.moveUser(x.uid, x.xPos, x.yPos))
           Promise.all(promises)
             .then(() => {
               resolve(`Moved ${users.length} users back into movement interval`)

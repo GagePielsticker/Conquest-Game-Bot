@@ -12,7 +12,7 @@ module.exports = class StartCommand extends Command {
   }
 
   async run (message, args) {
-    this.c.api.createUser(message.author.id)
+    this.c.game.createUser(message.author.id)
       .then(() => this.c.sendSuccess(message, 'You have successfully created an account! Welcome to the world of Serenwyn'))
       .catch(e => this.c.sendError(message, e))
   }

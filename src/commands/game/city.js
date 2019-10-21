@@ -15,12 +15,12 @@ module.exports = class CityCommand extends Command {
   async run (message, args) {
     const name = args[0]
     if (!name) return this.c.sendError(message, `Missing name, do ${this.c.settings.bot.prefix}city {city-name}`)
-    const mapEntry = await this.c.api.getCityByName(message.author.id, name)
-    if (!mapEntry || !mapEntry.city) return this.c.sendError(message, 'Invalid city')
+    const city = await this.c.game.getCityByName(message.author.id, name)
+    if (!city) return this.c.sendError(message, 'Invalid city')
     message.channel.send(
       this.c.em(message)
-        .setTitle(`Settings for city: ${mapEntry.city.name}`)
-        .setDescription(`City on tile: X: \`${mapEntry.xPos}\`, Y: \`${mapEntry.yPos}\`` + '\n\n' +
+        .setTitle(`Settings for city: ${city.name}`)
+        .setDescription(`City on tile: X: \`${city.xPos}\`, Y: \`${city.yPos}\`` + '\n\n' +
               'Settings: ' + '\n' +
               ':one: Information' + '\n' +
               ':two: Name' + '\n' +
@@ -38,18 +38,18 @@ module.exports = class CityCommand extends Command {
             fn: () => {
               msg.edit(
                 this.c.em(message)
-                  .setTitle(`City (${mapEntry.city.name})`)
+                  .setTitle(`City (${city.name})`)
                   .setDescription('Here you can view statistics of your city!')
-                  .addField('Position', `X: \`${mapEntry.city.xPos}\` Y: \`${mapEntry.city.yPos}\``, true)
-                  .addField('Level', `\`${mapEntry.city.level}\``, true)
-                  .addField('Has Stasis', `\`${mapEntry.city.inStasis ? 'Yes' : 'No'}\``, true)
+                  .addField('Position', `X: \`${city.xPos}\` Y: \`${city.yPos}\``, true)
+                  .addField('Level', `\`${city.level}\``, true)
+                  .addField('Has Stasis', `\`${city.inStasis ? 'Yes' : 'No'}\``, true)
                   .addField('Resources',
-                    'Stone:' + `\`${mapEntry.city.resources.stone}\` / \`${mapEntry.city.resources.maxStone}\`` + '\n' +
-                    'Metal:' + `\`${mapEntry.city.resources.metal}\` / \`${mapEntry.city.resources.maxMetal}\`` + '\n' +
-                    'Wood:' + `\`${mapEntry.city.resources.wood}\` / \`${mapEntry.city.resources.maxWood}\`` + '\n' +
-                    'Food:' + `\`${mapEntry.city.resources.food}\` / \`${mapEntry.city.resources.maxFood}\`` + '\n'
+                    'Stone:' + `\`${city.resources.stone}\` / \`${city.resources.maxStone}\`` + '\n' +
+                    'Metal:' + `\`${city.resources.metal}\` / \`${city.resources.maxMetal}\`` + '\n' +
+                    'Wood:' + `\`${city.resources.wood}\` / \`${city.resources.maxWood}\`` + '\n' +
+                    'Food:' + `\`${city.resources.food}\` / \`${city.resources.maxFood}\`` + '\n'
                     , true)
-                  .addField('Population', `${Object.keys(mapEntry.city.population).map(x => `${x.charAt(0).toUpperCase() + x.slice(1)}: \`${mapEntry.city.population[x]}\``).join('\n')}`, true)
+                  .addField('Population', `${Object.keys(city.population).map(x => `${x.charAt(0).toUpperCase() + x.slice(1)}: \`${city.population[x]}\``).join('\n')}`, true)
               )
             }
           },
@@ -58,18 +58,18 @@ module.exports = class CityCommand extends Command {
             fn: () => {
               msg.edit(
                 this.c.em(message)
-                  .setTitle(`Set the name for ${mapEntry.city.name}`)
+                  .setTitle(`Set the name for ${city.name}`)
                   .setDescription('Send the new name for your city!')
               ).then(async msg => {
                 let newName = await this.c.messageMenu(message, msg)
                 if (!newName) return
                 newName = newName.split(' ')[0]
-                this.c.api.setCityName(message.author.id, mapEntry.xPos, mapEntry.yPos, newName)
+                this.c.game.setCityName(message.author.id, city.xPos, city.yPos, newName)
                   .then(() => {
                     msg.edit(
                       this.c.em(message)
                         .setTitle('New city name!')
-                        .setDescription(`${mapEntry.city.name} is now called ${newName}!`)
+                        .setDescription(`${city.name} is now called ${newName}!`)
                     )
                   })
                   .catch(e => this.c.sendError(message, e, msg))
@@ -83,26 +83,26 @@ module.exports = class CityCommand extends Command {
                 this.c.em(message)
                   .setTitle('Move population')
                   .setDescription('Select a population to move people from:' + '\n\n' +
-                        Object.keys(mapEntry.city.population).map(x => `\`${x}\`) ${mapEntry.city.population[x]}`).join('\n') + '\n' +
+                        Object.keys(city.population).map(x => `\`${x}\`) ${city.population[x]}`).join('\n') + '\n' +
                         'Send the job of which you want to take people from in this channel'
                   )
               ).then(async msg => {
                 let populationFrom = await this.c.messageMenu(message, msg)
                 if (!populationFrom) return
                 populationFrom = populationFrom.toLowerCase()
-                if (!Object.keys(mapEntry.city.population).includes(populationFrom)) return this.c.sendError(message, `Invalid population type \`${populationFrom}\``, msg)
+                if (!Object.keys(city.population).includes(populationFrom)) return this.c.sendError(message, `Invalid population type \`${populationFrom}\``, msg)
                 msg.edit(
                   this.c.em(message)
                     .setTitle('Move population')
                     .setDescription('Select a population to move people to:' + '\n\n' +
-                          Object.keys(mapEntry.city.population).map(x => `\`${x}\`) ${mapEntry.city.population[x]}`).join('\n') + '\n' +
+                          Object.keys(city.population).map(x => `\`${x}\`) ${city.population[x]}`).join('\n') + '\n' +
                           'Send the job of which you want to move people from in this channel'
                     )
                 ).then(async msg => {
                   let populationTo = await this.c.messageMenu(message, msg)
                   if (!populationTo) return
                   populationTo = populationTo.toLowerCase()
-                  if (!Object.keys(mapEntry.city.population).includes(populationTo)) return this.c.sendError(message, `Invalid population type \`${populationTo}\``, msg)
+                  if (!Object.keys(city.population).includes(populationTo)) return this.c.sendError(message, `Invalid population type \`${populationTo}\``, msg)
                   msg.edit(
                     this.c.em(message)
                       .setTitle('Move population')
@@ -128,11 +128,11 @@ module.exports = class CityCommand extends Command {
                           this.c.sendError(message, 'Ran out of time, cancelled', msg)
                         },
                         yes: () => {
-                          this.c.api.changePopulationJob(message.author.id, mapEntry.xPos, mapEntry.yPos, populationFrom, populationTo, amountToMove)
+                          this.c.game.changePopulationJob(message.author.id, city.xPos, city.yPos, populationFrom, populationTo, amountToMove)
                             .then(() => {
                               msg.edit(
                                 this.c.em(message)
-                                  .setTitle(`Moved population in ${mapEntry.city.name}`)
+                                  .setTitle(`Moved population in ${city.name}`)
                                   .setDescription(`Moved \`${amountToMove}\` people from \`${populationFrom}\` to \`${populationTo}\``)
                               )
                             })
@@ -148,10 +148,10 @@ module.exports = class CityCommand extends Command {
           {
             emoji: '4⃣',
             fn: async () => {
-              const amountToLevelUp = await this.c.api.calculateLevelCost(mapEntry.city.level)
+              const amountToLevelUp = await this.c.game.calculateLevelCost(city.level)
               msg.edit(
                 this.c.em(message)
-                  .setTitle(`Level up ${mapEntry.city.name}`)
+                  .setTitle(`Level up ${city.name}`)
                   .setDescription(`This will take \`${amountToLevelUp.toLocaleString()}\` gold.\nAre you sure?`)
               )
                 .then(msg => {
@@ -166,12 +166,12 @@ module.exports = class CityCommand extends Command {
                       this.c.sendError(message, 'Ran out of time, cancelled', msg)
                     },
                     yes: () => {
-                      this.c.api.levelCity(message.author.id, mapEntry.xPos, mapEntry.yPos)
+                      this.c.game.levelCity(message.author.id, city.xPos, city.yPos)
                         .then(() => {
                           msg.edit(
                             this.c.em(message)
-                              .setTitle(`Leveled up ${mapEntry.city.name}!`)
-                              .setDescription(`Congratulations on leveling up to ${mapEntry.city.level + 1}`)
+                              .setTitle(`Leveled up ${city.name}!`)
+                              .setDescription(`Congratulations on leveling up to ${city.level + 1}`)
                           )
                         })
                         .catch(e => this.c.sendError(message, e, msg))

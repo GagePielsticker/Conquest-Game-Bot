@@ -47,9 +47,12 @@ module.exports = client => {
         })
     })
   }
+  console.log('loaded api')
 
   /** @namespace */
-  client.api = {
+  client.game = {
+
+    callAPI: callAPI,
 
     /**
      * Contains the user id's of everyone currently traveling
@@ -103,8 +106,8 @@ module.exports = client => {
     * @param {Integer} yPos position on map grid
     * @returns {Integer} Time of travel in ms
     */
-    moveUser: (uid, xPos, yPos) => {
-      return callAPI(`/users/${uid}/move/${xPos}/${yPos}`, 'POST')
+    moveUser: async (uid, xPos, yPos) => {
+      return (await (callAPI(`/users/${uid}/move/${xPos}/${yPos}`, 'POST'))).time
     },
 
     /**
@@ -241,7 +244,7 @@ module.exports = client => {
      * @param {String} name
      */
     getCityByName: async (uid, name) => {
-      const cities = client.api.getUserCities(uid)
+      const cities = await client.game.getUserCities(uid)
       const city = cities.find(x => x.name.toLowerCase() === name.toLowerCase())
       return city || null
     },

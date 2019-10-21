@@ -12,7 +12,7 @@ require('./library/database.js')(client)
 require('./library/extendedFunctions.js')(client)
 require('./library/events.js')(client)
 require('./library/database.js')(client)
-require('./library/game.js')(client)
+require('./library/api.js')(client)
 
 // checks if dev mode is set to true
 if (process.argv.includes('-d')) {

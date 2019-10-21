@@ -14,10 +14,10 @@ module.exports = class ScoutCommand extends Command {
   }
 
   async run (message, args) {
-    const cooldown = this.c.api.scoutCooldown.get(message.author.id)
+    const cooldown = this.c.game.scoutCooldown.get(message.author.id)
     if (cooldown) return this.c.sendError(message, `Already scouting tile, wait ${humanizeDuration(cooldown.endTime - moment().unix())}`)
     const execUser = await this.c.database.collection('users').findOne({ uid: message.author.id })
-    const travelTime = await this.c.api.calculateScoutTime(message.author.id)
+    const travelTime = await this.c.game.calculateScoutTime(message.author.id)
     message.channel.send(
       this.c.em(message)
         .setColor(this.c.settings.bot.embedColor)
@@ -37,7 +37,7 @@ module.exports = class ScoutCommand extends Command {
             this.c.sendError(message, 'Did not react in time, cancelled', confirmMsg)
           },
           yes: () => {
-            this.c.api.scoutTile(message.author.id)
+            this.c.game.scoutTile(message.author.id)
               .then(async response => {
                 let { time, mapEntry } = response
                 if (message.content.match(/-d/) && this.c.dev) time = 1000

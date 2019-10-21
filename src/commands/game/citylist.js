@@ -16,7 +16,7 @@ module.exports = class CityListCommand extends Command {
     let page = args[0] || 1
     if (isNaN(page)) return this.c.sendError(message, 'Invalid number for page')
     page = Number(page)
-    this.c.api.getUserCityNames(message.author.id, page)
+    this.c.game.getUserCityNames(message.author.id, page)
       .then(response => {
         const { cities, totalPages } = response
         if (page > totalPages) return this.c.sendError(message, `Invalid page, max pages: ${totalPages}`)
