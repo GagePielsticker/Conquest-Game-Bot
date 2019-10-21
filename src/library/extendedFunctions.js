@@ -236,4 +236,9 @@ module.exports = client => {
       .setFooter(msg.author.tag)
       .setTimestamp()
   }
+
+  client.loadingEmbed = (msg) => {
+    return client.em(msg)
+      .setDescription(`${client.emoji.loading} Sending your request to client.`)
+  }
 }

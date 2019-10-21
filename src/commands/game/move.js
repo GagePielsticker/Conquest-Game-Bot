@@ -50,27 +50,28 @@ module.exports = class MoveCommand extends Command {
           notime: () => {
             this.c.sendError(message, 'Ran out of time, cancelled', msg)
           },
-          yes: () => {
+          yes: async () => {
+            await msg.edit(this.c.loadingEmbed(message))
             this.c.game.moveUser(message.author.id, newX, newY)
               .then((time) => {
                 if (message.content.match(/-d/) && this.c.dev) time = 1000
                 msg.edit(
                   this.c.em(message)
                     .setTitle('Moving!')
-                    .setDescription(`Now moving to tile: X: \`${newX}\`, Y: \`${newY}\`\n\nYou will be pinged here when you have finished moving!`)
+                    .setDescription(`Now moving to tile: X: \`${newX}\`, Y: \`${newY}\``/* \n\nYou will be pinged here when you have finished moving!` */)
                     .addField('Will be done in', `\`${humanizeDuration(time)}\``)
                 )
-                const timeout = setTimeout(() => {
-                  message.reply(
-                    this.c.em(message)
-                      .setTitle('Moved!')
-                      .setDescription(`Your new location is X: \`${newX}\` \`${newY}\``)
-                  )
-                }, time)
-                var movementCooldown = this.c.game.movementCooldown.get(message.author.id)
-                if (!movementCooldown) return
-                movementCooldown.timeout = timeout
-                this.c.game.movementCooldown.set(message.author.id, movementCooldown)
+                // const timeout = setTimeout(() => {
+                //   message.reply(
+                //     this.c.em(message)
+                //       .setTitle('Moved!')
+                //       .setDescription(`Your new location is X: \`${newX}\` \`${newY}\``)
+                //   )
+                // }, time)
+                // var movementCooldown = this.c.game.movementCooldown.get(message.author.id)
+                // if (!movementCooldown) return
+                // movementCooldown.timeout = timeout
+                // this.c.game.movementCooldown.set(message.author.id, movementCooldown)
               })
               .catch(e => this.c.sendError(message, e, msg))
           }
