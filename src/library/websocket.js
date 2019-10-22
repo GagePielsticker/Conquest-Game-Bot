@@ -11,6 +11,7 @@ class WebsocketReceiver extends EventEmitter {
     this.ack = false
     this.hbInterval = null
     this.attemptingReconnect = false
+    this.id = null
 
     this.start()
   }
@@ -28,7 +29,6 @@ class WebsocketReceiver extends EventEmitter {
     this.ws.on('open', () => {
       this.client.log('Websocket connected')
       this.online = true
-      this.setupHeartbeat()
     })
     this.ws.on('close', (code, reason) => {
       if (!this.attemptingReconnect) this.handleClose(code, reason)
@@ -39,8 +39,16 @@ class WebsocketReceiver extends EventEmitter {
       const data = JSON.parse(msg)
       this.emit(data.event, data.data)
 
+      if (data.event === 'hello') this.handleHello(data.data)
       if (data.event === 'ack') this.handleAck()
     })
+  }
+
+  handleHello (data) {
+    this.client.log(`Received hello. My id is ${data.id}, setting heartbeat interval to ${data.hb}`)
+    this.id = data.id
+    this.send('hello', { hello: true })
+    this.setupHeartbeat(data.hb)
   }
 
   handleClose (code, reason) {
@@ -71,7 +79,7 @@ class WebsocketReceiver extends EventEmitter {
     )
   }
 
-  setupHeartbeat () {
+  setupHeartbeat (time) {
     this.hbInterval = setInterval(() => {
       this.heartbeat()
       setTimeout(() => {
@@ -80,7 +88,7 @@ class WebsocketReceiver extends EventEmitter {
           this.attemptReconnect()
         }
       }, 5000)
-    }, 30000)
+    }, time)
   }
 
   heartbeat () {
