@@ -5,9 +5,6 @@ module.exports = client => {
   client.on('ready', async () => {
     await client.log('Client has started.')
     await client.connectDb().then(() => client.log('DB Connected'))
-    await client.loadMovement()
-      .then(client.log)
-      .catch(client.log)
     await client.reloadCommands()
     await client.user.setActivity(client.settings.bot.activity)
     client.emoji = Object.keys(client.settings.bot.emojis)

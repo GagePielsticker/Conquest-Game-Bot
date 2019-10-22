@@ -114,27 +114,6 @@ module.exports = client => {
   }
 
   /**
-   * Loads all stored users in movement database back into live interval
-   * @returns {Promise<String>} Debug string
-   */
-  client.loadMovement = () => {
-    return new Promise((resolve, reject) => {
-      client.database.collection('movement').find({})
-        .toArray((err, users) => {
-          if (err) return reject(err)
-          const promises = users.map(x => client.game.moveUser(x.uid, x.xPos, x.yPos))
-          Promise.all(promises)
-            .then(() => {
-              resolve(`Moved ${users.length} users back into movement interval`)
-            })
-            .catch(err => {
-              reject(`Error moving movements back into movement interval; ${err}`) // eslint-disable-line prefer-promise-reject-errors
-            })
-        })
-    })
-  }
-
-  /**
      * Creates a success discord embed and sends
      * @param {Object} message Discords message event fire
      * @param {String} string
