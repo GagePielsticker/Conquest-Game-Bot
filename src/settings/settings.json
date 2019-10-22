@@ -36,6 +36,10 @@
     "api" : {
       "apiRoot": "http://localhost:3000/api"
     },
+    
+    "ws": {
+        "uri": "ws://localhost:80"
+    },
 
     "dbl" : {
         "token" : ""

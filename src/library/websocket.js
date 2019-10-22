@@ -16,7 +16,7 @@ class WebsocketReceiver extends EventEmitter {
   }
 
   start () {
-    this.ws = new WS('ws://localhost:1000')
+    this.ws = new WS(this.client.settings.ws.uri)
     this.handleEvents()
   }
 
