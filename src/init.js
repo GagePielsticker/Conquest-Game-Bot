@@ -13,6 +13,7 @@ require('./library/extendedFunctions.js')(client)
 require('./library/events.js')(client)
 require('./library/database.js')(client)
 require('./library/api.js')(client)
+require('./library/websocket.js')(client)
 
 // checks if dev mode is set to true
 if (process.argv.includes('-d')) {
