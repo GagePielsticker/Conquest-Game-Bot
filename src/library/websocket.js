@@ -6,7 +6,6 @@ class WebsocketReceiver extends EventEmitter {
     super()
     this.ws = null
     this.client = client
-    this.online = false
 
     this.ack = false
     this.hbInterval = null
@@ -16,6 +15,10 @@ class WebsocketReceiver extends EventEmitter {
     this.startDate = null
 
     this.start()
+  }
+
+  get online () {
+    return this.ws.readyState === 1
   }
 
   start () {
@@ -34,12 +37,10 @@ class WebsocketReceiver extends EventEmitter {
     })
     this.ws.on('open', () => {
       this.client.log('Websocket connected')
-      this.online = true
       this.startDate = new Date()
     })
     this.ws.on('close', (code, reason) => {
       if (!this.attemptingReconnect) this.handleClose(code, reason)
-      this.online = false
     })
     this.ws.on('message', (msg) => {
       this.emit('raw', msg)

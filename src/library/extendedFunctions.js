@@ -63,7 +63,7 @@ module.exports = client => {
     const cmd = client.commands.find(x => x.name === command || x.aliases.includes(command))
     if (!cmd) return
 
-    if (!client.subWS.online) {
+    if (!client.subWS.online && cmd.category === 'game') {
       return message.channel.send(
         client.em(message)
           .setTitle('Oops!')
