@@ -13,12 +13,18 @@ class WebsocketReceiver extends EventEmitter {
     this.attemptingReconnect = false
     this.id = null
 
+    this.startDate = null
+
     this.start()
   }
 
   start () {
     this.ws = new WS(this.client.settings.ws.uri)
     this.handleEvents()
+  }
+
+  get uptime () {
+    return new Date().getTime() - this.startDate.getTime()
   }
 
   handleEvents () {
@@ -29,6 +35,7 @@ class WebsocketReceiver extends EventEmitter {
     this.ws.on('open', () => {
       this.client.log('Websocket connected')
       this.online = true
+      this.startDate = new Date()
     })
     this.ws.on('close', (code, reason) => {
       if (!this.attemptingReconnect) this.handleClose(code, reason)
