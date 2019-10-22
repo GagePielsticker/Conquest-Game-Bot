@@ -6,7 +6,7 @@ module.exports = class ReloadCommand extends Command {
       usage: `${client.settings.bot.prefix}reload {piece}`,
       accountCheck: false,
       requiredPermission: null,
-      category: 'game'
+      category: 'dev'
     })
     this.c = client
   }
