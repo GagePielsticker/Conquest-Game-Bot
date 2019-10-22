@@ -63,6 +63,14 @@ module.exports = client => {
     const cmd = client.commands.find(x => x.name === command || x.aliases.includes(command))
     if (!cmd) return
 
+    if (!client.subWS.online) {
+      return message.channel.send(
+        client.em(message)
+          .setTitle('Oops!')
+          .setDescription(`${client.emoji.loading} Our backend service is not connected! \nWe're sorry for the inconvenience. Try again later!`)
+      )
+    }
+
     if (cmd.beta && !client.beta) return
 
     if (cmd.accountCheck) {
