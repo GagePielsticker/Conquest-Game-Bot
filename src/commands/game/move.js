@@ -11,6 +11,22 @@ module.exports = class MoveCommand extends Command {
       category: 'game'
     })
     this.c = client
+    this.timeouts = new Map()
+
+    client.subWS.off('STOP_USER', (data) => {
+      this.handleStopUser(data)
+    })
+
+    client.subWS.on('STOP_USER', (data) => {
+      this.handleStopUser(data)
+    })
+  }
+
+  handleStopUser (data) {
+    const timeout = this.timeouts.get(data.user)
+    if (!timeout) return
+    clearTimeout(timeout)
+    this.timeouts.delete(data.user)
   }
 
   async run (message, args) {
@@ -61,17 +77,14 @@ module.exports = class MoveCommand extends Command {
                     .setDescription(`Now moving to tile: X: \`${newX}\`, Y: \`${newY}\``/* \n\nYou will be pinged here when you have finished moving!` */)
                     .addField('Will be done in', `\`${humanizeDuration(time)}\``)
                 )
-                // const timeout = setTimeout(() => {
-                //   message.reply(
-                //     this.c.em(message)
-                //       .setTitle('Moved!')
-                //       .setDescription(`Your new location is X: \`${newX}\` \`${newY}\``)
-                //   )
-                // }, time)
-                // var movementCooldown = this.c.game.movementCooldown.get(message.author.id)
-                // if (!movementCooldown) return
-                // movementCooldown.timeout = timeout
-                // this.c.game.movementCooldown.set(message.author.id, movementCooldown)
+                const timeout = setTimeout(() => {
+                  message.reply(
+                    this.c.em(message)
+                      .setTitle('Moved!')
+                      .setDescription(`Your new location is X: \`${newX}\` \`${newY}\``)
+                  )
+                }, time)
+                this.timeouts.set(message.author.id, timeout)
               })
               .catch(e => this.c.sendError(message, e, msg))
           }
