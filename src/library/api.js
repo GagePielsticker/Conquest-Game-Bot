@@ -67,7 +67,7 @@ module.exports = client => {
      * @returns {Promise<User>} User Information
      */
     createUser: (uid) => {
-      return callAPI(`/users/${uid}`, 'PUT')
+      return callAPI('/users', 'PUT', null, uid)
     },
 
     /**
