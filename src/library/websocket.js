@@ -11,6 +11,7 @@ class WebsocketReceiver extends EventEmitter {
     this.hbInterval = null
     this.attemptingReconnect = false
     this.id = null
+    this.auth = null
 
     this.startDate = null
 
@@ -49,13 +50,14 @@ class WebsocketReceiver extends EventEmitter {
 
       if (data.event === 'hello') this.handleHello(data.data)
       if (data.event === 'ack') this.handleAck()
+      if (data.event === 'auth') this.auth = data.data.auth
     })
   }
 
   handleHello (data) {
     this.client.log(`Received hello. My id is ${data.id}, setting heartbeat interval to ${data.hb}`)
     this.id = data.id
-    this.send('hello', { hello: true })
+    this.send('hello', { hello: true, auth: this.client.settings.ws.auth })
     this.setupHeartbeat(data.hb)
   }
 

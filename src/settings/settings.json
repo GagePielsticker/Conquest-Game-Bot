@@ -29,16 +29,17 @@
         "port": "27017",
         "database" : "conquest",
         "betaDatabase" : "conquest-dev",
-        "username": "",
-        "password": ""
+        "username": "conquest",
+        "password": "password"
     },
 
     "api" : {
-      "apiRoot": "http://localhost:3000/api"
+      "apiRoot": "http://localhost:30002/api"
     },
     
     "ws": {
-        "uri": "ws://localhost:80"
+        "uri": "ws://localhost:80",
+        "auth": "uber!is!gay"
     },
 
     "dbl" : {

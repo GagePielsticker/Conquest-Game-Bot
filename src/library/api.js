@@ -33,6 +33,7 @@ module.exports = client => {
         method: method || 'GET',
         body: body ? JSON.stringify(body) : null,
         headers: {
+          'Authorization': `${client.subWS.id} ${client.subWS.auth}`,
           'Content-Type': 'application/json',
           user: user || undefined
         }
