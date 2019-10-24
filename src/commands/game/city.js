@@ -25,7 +25,8 @@ module.exports = class CityCommand extends Command {
               ':one: Information' + '\n' +
               ':two: Name' + '\n' +
               ':three: Population' + '\n' +
-              ':four: Level Up' +
+              ':four: Level Up' + '\n' +
+              ':five: Delete' +
 
               '\n\n' +
               'React with the respective setting number to change those settings!'
@@ -175,6 +176,42 @@ module.exports = class CityCommand extends Command {
                           )
                         })
                         .catch(e => this.c.sendError(message, e, msg))
+                    }
+                  })
+                })
+            }
+          },
+          {
+            emoji: '5⃣',
+            fn: () => {
+              msg.edit(
+                this.c.em(message)
+                  .setTitle(`Remove ${city.name}?`)
+                  .setDescription('This action can not be reversed.')
+              )
+                .then(msg => {
+                  this.c.confirm(message, msg, {
+                    no: () => {
+                      msg.edit(
+                        this.c.em(message)
+                          .setTitle('Cancelled, city not deleted')
+                      )
+                    },
+                    notime: () => {
+                      msg.edit(
+                        this.c.em(message)
+                          .setDescription('Ran out of time, city not deleted')
+                      )
+                    },
+                    yes: () => {
+                      this.c.game.destroyCity(message.author.id, city.xPos, city.yPos)
+                        .then(() => {
+                          msg.edit(
+                            this.c.em(message)
+                              .setTitle('Successfully removed city')
+                          )
+                        })
+                        .catch(err => this.c.sendError(message, err, msg))
                     }
                   })
                 })
