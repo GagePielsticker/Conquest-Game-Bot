@@ -14,7 +14,7 @@ module.exports = class SettleCommand extends Command {
   async run (message, args) {
     const name = args[0]
     if (!name) return this.c.sendError(message, `Name is required, \`${this.c.settings.bot.prefix}settle {name}\``)
-    const user = await this.c.database.collection('users').findOne({ uid: message.author.id })
+    const user = await this.c.game.getUser(message.author.id)
     message.channel.send(
       this.c.em(message)
         .setTitle('Confirm settle')

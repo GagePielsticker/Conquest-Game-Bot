@@ -74,14 +74,14 @@ module.exports = client => {
     if (cmd.beta && !client.beta) return
 
     if (cmd.accountCheck) {
-      const account = await client.database.collection('users').findOne({ uid: message.author.id })
+      const account = await client.game.getUser(message.author.id)
       if (!account) return client.sendError(message, `You don't have an account! Do \`${client.settings.bot.prefix}start\` to get started!`)
     }
 
-    if (cmd.category === 'game' && !cmd.allowDuringMove) {
+    if (cmd.category === 'game' && !cmd.allowDuringMove && cmd.accountCheck) {
       const movement = await client.game.isMoving(message.author.id)
       if (movement) {
-        const userEntry = await client.database.collection('users').findOne({ uid: message.author.id })
+        const userEntry = await client.game.getUser(message.author.id)
         const timeLeft = await client.game.calculateTravelTime(userEntry.xPos, userEntry.yPos, movement.xPos, movement.yPos)
         return message.channel.send(
           client.em(message)

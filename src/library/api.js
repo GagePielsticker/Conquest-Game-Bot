@@ -61,6 +61,10 @@ module.exports = client => {
      */
     movementCooldown: new Map(),
     scoutCooldown: new Map(),
+    
+    getUser: (uid) => {
+      return callAPI(`/users/${uid}`, 'GET')
+    },
 
     /**
      * Create a database object for the guild

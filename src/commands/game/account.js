@@ -13,7 +13,7 @@ module.exports = class AccountCommand extends Command {
   }
 
   async run (message, args) {
-    const entry = await this.c.database.collection('users').findOne({ uid: message.author.id })
+    const entry = await this.c.game.getUser(message.author.id)
     const cities = await this.c.game.getUserCities(message.author.id)
     const embed = this.c.em(message)
       .setTitle(':spy: Account')

@@ -15,8 +15,8 @@ module.exports = class ReloadCommand extends Command {
     if (!this.c.settings.bot.developers.includes(message.author.id)) return
     const piece = args[0]
     if (piece === 'lib') {
-      delete require.cache[require.resolve('../../library/game.js')]
-      require('../../library/game.js')(this.c)
+      delete require.cache[require.resolve('../../library/api.js')]
+      require('../../library/api.js')(this.c)
       this.c.sendSuccess(message, 'Reloaded library')
     } else if (piece === 'cmd') {
       this.c.reloadCommands()

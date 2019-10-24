@@ -12,7 +12,7 @@ module.exports = class PositionCommand extends Command {
   }
 
   async run (message, args) {
-    const entry = await this.c.database.collection('users').findOne({ uid: message.author.id })
+    const entry = await this.c.game.getUser(message.author.id)
     message.channel.send(
       this.c.em(message)
         .setTitle(':map: Position')

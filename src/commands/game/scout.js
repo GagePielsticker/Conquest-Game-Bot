@@ -16,7 +16,7 @@ module.exports = class ScoutCommand extends Command {
   async run (message, args) {
     const cooldown = this.c.game.scoutCooldown.get(message.author.id)
     if (cooldown) return this.c.sendError(message, `Already scouting tile, wait ${humanizeDuration(cooldown.endTime - moment().unix())}`)
-    const execUser = await this.c.database.collection('users').findOne({ uid: message.author.id })
+    const execUser = await this.c.game.getUser(message.author.id)
     const travelTime = await this.c.game.calculateScoutTime(message.author.id)
     message.channel.send(
       this.c.em(message)
@@ -54,7 +54,7 @@ module.exports = class ScoutCommand extends Command {
                   if (mapEntry.city != null) {
                     baseDescription += `You found a level \`${mapEntry.city.level}\` city!`
                     if (mapEntry.city.owner) {
-                      const owner = await this.c.database.collection('users').findOne({ uid: mapEntry.city.owner })
+                      const owner = await this.c.game.getUser(mapEntry.city.owner)
                       const ownerUser = this.c.users.get(mapEntry.city.owner)
                       if (owner.flagURL != null) embed.setThumbnail(owner.flagURL)
                       embed.addField('Owner', `\`${ownerUser.username}\``, true)

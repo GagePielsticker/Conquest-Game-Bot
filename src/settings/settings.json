@@ -29,8 +29,8 @@
         "port": "27017",
         "database" : "conquest",
         "betaDatabase" : "conquest-dev",
-        "username": "",
-        "password": ""
+        "username": "conquest",
+        "password": "password"
     },
 
     "api" : {

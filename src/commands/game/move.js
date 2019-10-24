@@ -42,7 +42,7 @@ module.exports = class MoveCommand extends Command {
     newX = Number(newX)
     newY = Number(newY)
 
-    const user = await this.c.database.collection('users').findOne({ uid: message.author.id })
+    const user = await this.c.game.getUser(message.author.id)
     const timeToMove = await this.c.game.calculateTravelTime(user.xPos, user.yPos, newX, newY)
 
     message.channel.send(
