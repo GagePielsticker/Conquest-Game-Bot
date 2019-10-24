@@ -33,7 +33,7 @@ module.exports = client => {
         method: method || 'GET',
         body: body ? JSON.stringify(body) : null,
         headers: {
-          'Authorization': `${client.subWS.id} ${client.subWS.auth}`,
+          Authorization: `${client.subWS.id} ${client.subWS.auth}`,
           'Content-Type': 'application/json',
           user: user || undefined
         }
@@ -61,7 +61,7 @@ module.exports = client => {
      */
     movementCooldown: new Map(),
     scoutCooldown: new Map(),
-    
+
     getUser: (uid) => {
       return callAPI(`/users/${uid}`, 'GET')
     },
