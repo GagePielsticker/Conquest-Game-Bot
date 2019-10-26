@@ -19,6 +19,7 @@ module.exports = class CityListCommand extends Command {
     this.c.game.getUserCityNames(message.author.id, page)
       .then(response => {
         const { cities, totalPages } = response
+        if (totalPages === 0) return this.c.sendError(message, 'You have no cities!')
         if (page > totalPages) return this.c.sendError(message, `Invalid page, max pages: ${totalPages}`)
         message.channel.send(
           this.c.em(message)

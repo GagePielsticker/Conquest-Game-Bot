@@ -2,7 +2,7 @@ const Command = require('../command.js')
 
 module.exports = class CityCommand extends Command {
   constructor (client) {
-    super('city', [], 'City settings and information', {
+    super('city', ['c'], 'City settings and information', {
       usage: `${client.settings.bot.prefix}city {city name}`,
       accountCheck: true,
       requiredPermission: null,
