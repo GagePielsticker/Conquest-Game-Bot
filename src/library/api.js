@@ -226,8 +226,8 @@ module.exports = client => {
      * Scouts the tile the user is currently on
      * @param {Snowflake} uid discord id
      */
-    calculateScoutTime: (uid) => {
-      return callAPI(`/users/${uid}/scout`, 'GET')
+    calculateScoutTime: async (uid) => {
+      return (await (callAPI(`/users/${uid}/scout`, 'GET'))).time
     },
 
     /**
