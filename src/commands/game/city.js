@@ -146,7 +146,7 @@ module.exports = class CityCommand extends Command {
               })
             }
           },
-          {  // level up
+          { // level up
             emoji: '4⃣',
             fn: async () => {
               const amountToLevelUp = await this.c.game.calculateLevelCost(city.level)
@@ -190,10 +190,12 @@ module.exports = class CityCommand extends Command {
               )
               const name = await this.c.messageMenu(message, msg)
               if (!name) return
-              if (city.name !== name) return msg.edit(
-                this.c.em(message)
-                  .setTitle('Wrong name, deletion cancelled')
-              )
+              if (city.name !== name) {
+                return msg.edit(
+                  this.c.em(message)
+                    .setTitle('Wrong name, deletion cancelled')
+                )
+              }
               msg.edit(
                 this.c.em(message)
                   .setTitle(`Remove ${city.name}?`)

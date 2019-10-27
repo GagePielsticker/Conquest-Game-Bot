@@ -42,6 +42,9 @@ module.exports = class MoveCommand extends Command {
     newX = Number(newX)
     newY = Number(newY)
 
+    newX = newX.toFixed(0)
+    newY = newY.toFixed(0)
+
     const user = await this.c.game.getUser(message.author.id)
     const timeToMove = await this.c.game.calculateTravelTime(user.xPos, user.yPos, newX, newY)
 
