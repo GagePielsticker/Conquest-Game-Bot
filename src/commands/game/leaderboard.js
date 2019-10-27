@@ -28,7 +28,7 @@ module.exports = class LeaderboardCommand extends Command {
             .setDescription(`You are viewing page \`${page}\` / \`${totalPages}\`` + '\n' +
                     '```' + '\n' +
                       `${leaderboard.length < 1 ? 'none'
-                      : leaderboard.map(x => `${x.index}.) ${this.c.users.get(x.user).username}`).join('\n')
+                      : leaderboard.map(x => `${x.index}.) ${(this.c.users.get(x.user) || {}).username}`).join('\n')
                     }` + '\n' +
                     '```' + '\n\n' +
                     `${page + 1 > totalPages ? '' : `Do \`${this.c.settings.bot.prefix}leaderboard ${subject} ${page + 1}\` to view next page`}`

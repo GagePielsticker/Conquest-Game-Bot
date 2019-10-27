@@ -248,6 +248,7 @@ module.exports = client => {
     },
 
     getLeaderboard: (by, pageNumber) => {
+      return callAPI(`/leaderboard/${by}?page=${pageNumber}`, 'GET')
     },
 
     /**
