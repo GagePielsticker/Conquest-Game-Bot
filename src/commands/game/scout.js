@@ -4,7 +4,7 @@ const moment = require('moment')
 
 module.exports = class ScoutCommand extends Command {
   constructor (client) {
-    super('scout', [], 'Scouts the tile you\'re currently on.', {
+    super('scout', ['s'], 'Scouts the tile you\'re currently on.', {
       usage: `${client.settings.bot.prefix}scout`,
       accountCheck: true,
       requiredPermission: null,
