@@ -315,7 +315,7 @@ module.exports = client => {
     postStats: (guildCount, userCount) => {
       return callAPI('/api/statistics/post', 'POST', {
         guildCount: guildCount,
-        serverCount: userCount
+        userCount: userCount
       })
     },
 
