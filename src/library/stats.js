@@ -11,4 +11,11 @@ module.exports = client => {
   dbl.on('posted', () => {
     client.log('Server count posted!')
   })
+
+  /**
+   * Post stats to our api every 30 mins
+   */
+  setInterval(() => {
+    client.game.postStats(client.guilds.size, client.users.size)
+  }, 1800000)
 }

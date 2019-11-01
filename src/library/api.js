@@ -308,6 +308,18 @@ module.exports = client => {
     },
 
     /**
+     * Denies user from alliance
+     * @param {Integer} guildCount
+     * @param {Integer} guildCount
+     */
+    postStats: (guildCount, userCount) => {
+      return callAPI('/api/statistics/post', 'POST', {
+        guildCount: guildCount,
+        serverCount: userCount
+      })
+    },
+
+    /**
      * Gets the users alliance object
      * @param {Snowflake} uid
      */
