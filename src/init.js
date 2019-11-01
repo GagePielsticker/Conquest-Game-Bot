@@ -29,7 +29,6 @@ if (process.argv.includes('-d')) {
   client.dev = false
   client.beta = true
 } else {
-  require('./library/stats.js')(client)
   client.dev = false
   client.beta = false
 }
