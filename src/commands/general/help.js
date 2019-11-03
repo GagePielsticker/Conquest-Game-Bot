@@ -20,7 +20,7 @@ module.exports = class HelpCommand extends Command {
         .setTitle(command.name)
         .addField('Description', `\`\`\`${command.description}\`\`\``)
         .addField('Usage', `\`\`\`${command.usage}\`\`\``)
-      if (command.aliases.length > 0) embed.addField('Aliases', `\`\`\`${command.aliases.join('\n')}\`\`\``)
+      if (command.aliases.length > 0) embed.addField('Aliases', `\`\`\`${command.aliases.join(', ')}\`\`\``)
       return message.channel.send(embed)
     }
     const embed = this.c.em(message)

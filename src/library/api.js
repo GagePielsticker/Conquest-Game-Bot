@@ -321,6 +321,14 @@ module.exports = client => {
      */
     leaveAlliance: (uid) => {
       return callAPI(`/users/${uid}/alliance`, 'DELETE')
+    },
+
+    shop: () => {
+      return callAPI('/shop', 'GET')
+    },
+
+    buy: (uid, product) => {
+      return callAPI('/shop', 'POST', { buy: product }, uid)
     }
   }
 }

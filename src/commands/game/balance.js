@@ -2,7 +2,7 @@ const Command = require('../command.js')
 
 module.exports = class BalanceCommand extends Command {
   constructor (client) {
-    super('balance', ['bal'], 'Quick view the users balance.', {
+    super('balance', ['bal', 'gold', 'g'], 'Quick view the users balance.', {
       usage: `${client.settings.bot.prefix}balance`,
       accountCheck: true,
       requiredPermission: null,
